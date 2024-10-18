@@ -1,17 +1,28 @@
 import { setAuthCookie } from '@/lib/cookies'
+import { verifyPassword } from '@/lib/passwordUtils'
 import { NextResponse } from 'next/server'
 
-const VALID_PASSWORDS = process.env.VALID_PASSWORDS?.split(',') || []
+const HASHED_PASSWORDS = process.env.HASHED_PASSWORDS?.split(',') || []
 
 export async function POST(request: Request) {
   const { password } = await request.json()
 
-  if (VALID_PASSWORDS.includes(password)) {
-    setAuthCookie(true)
-    return NextResponse.json({ success: true })
-  } else {
-    return NextResponse.json({ success: false }, { status: 401 })
+  console.log("POST", process.env.HASHED_PASSWORDS);
+  
+  for (const hashedPassword of HASHED_PASSWORDS) {
+
+    console.log("hashedPassword", hashedPassword);
+    
+    if (await verifyPassword(password, hashedPassword)) {
+
+        console.log("THIS hashedPassword", hashedPassword);
+        
+      setAuthCookie(true)
+      return NextResponse.json({ success: true })
+    }
   }
+
+  return NextResponse.json({ success: false }, { status: 401 })
 }
 
 export async function DELETE() {
