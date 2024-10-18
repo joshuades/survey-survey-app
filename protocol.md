@@ -10,3 +10,5 @@ DID:
     - 'default' style, 'zinc' and yes for the css variables
 - `npx shadcn@latest add textarea` (etc.)
 - generate & copy api key from https://platform.openai.com/api-keys into .env.local & into vercel settings
+- as env. variable add `NEXT_PUBLIC_ENABLE_AUTH="true"` to enable/disable auth
+- as env. variable add passwords like `VALID_PASSWORDS="password123,securepass,letmein"`

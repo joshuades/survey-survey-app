@@ -53,7 +53,7 @@ export default function SurveyBuilder() {
   }
 
   return (
-    <div className="container mx-auto p-4 max-w-screen-md">
+    <div className="container mx-auto p-4 max-w-screen-sm">
       <Card className="mb-8">
         <CardHeader>
           <CardTitle>AI Survey Builder</CardTitle>
