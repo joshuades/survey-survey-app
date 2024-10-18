@@ -12,7 +12,10 @@ export function middleware(request: NextRequest) {
   const isAuthPage = request.nextUrl.pathname === '/login'
 
   if (!isAuthenticated && !isAuthPage) {
-    return NextResponse.redirect(new URL('/login', request.url))
+    const url = request.nextUrl.clone()
+    url.pathname = '/login'
+    url.searchParams.set('redirectUrl', request.nextUrl.pathname)
+    return NextResponse.redirect(url)
   }
 
   if (isAuthenticated && isAuthPage) {

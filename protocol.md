@@ -12,5 +12,5 @@ DID:
 - generate & copy api key from https://platform.openai.com/api-keys into .env.local & into vercel settings
 - as env. variable add `NEXT_PUBLIC_ENABLE_AUTH="true"` to enable/disable auth
 - use the script `node src/scripts/hashPassword.mjs password1 password2 password3` to generate password hashes
-    - Important: in .env for each hash exchange all `$` with `\$`
+    - Important: in .env.local for each hash: exchange all `$` with `\$`. But: in vercel leave `$` as they are 
 - put those hashes into the env. variable `HASHED_PASSWORDS`

@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 type AuthContextType = {
   isAuthenticated: boolean
   isLoading: boolean
-  login: (password: string) => Promise<boolean>
+  login: (password: string, redirectUrl?: string) => Promise<boolean>
   logout: () => Promise<void>
 }
 
@@ -32,7 +32,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     checkAuth()
   }, [])
 
-  const login = async (password: string) => {
+  const login = async (password: string, redirectUrl?: string) => {
     setIsLoading(true)
     try {
       const response = await fetch('/api/auth', {
@@ -43,7 +43,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const data = await response.json()
       setIsAuthenticated(data.success)
       if (data.success) {
-        router.push('/')
+        router.push(redirectUrl || '/')
       }
       return data.success
     } finally {

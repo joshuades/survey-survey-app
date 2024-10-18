@@ -6,16 +6,19 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useAuth } from './AuthContext'
 import { Loader2 } from 'lucide-react'
+import { useSearchParams } from 'next/navigation'
 
 export default function LoginForm() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const { login, isLoading } = useAuth()
+  const searchParams = useSearchParams()
+  const redirectUrl = searchParams.get('redirectUrl')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
-    const success = await login(password)
+    const success = await login(password, redirectUrl || '/')
     if (!success) {
       setError('Invalid password')
     }
