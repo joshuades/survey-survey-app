@@ -1,6 +1,6 @@
 ## Protocol
 
-DID: 
+**DID:** 
 - `npx create-next-app@latest`
     - Next.js 14.2.15
     - answers all 'yes'
@@ -14,3 +14,15 @@ DID:
 - use the script `node src/scripts/hashPassword.mjs password1 password2 password3` to generate password hashes
     - Important: in .env.local for each hash: exchange all `$` with `\$`. But: in vercel leave `$` as they are 
 - put those hashes into the env. variable `HASHED_PASSWORDS`
+- add database
+    - follow v0: "I have a next js 14.2.15 app on vercel and i want to setup a postgres database with the drizzle orm. how do i set this up?"
+    - follow docs
+        - [drizzle "postgresql-new"](https://orm.drizzle.team/docs/get-started/postgresql-new)
+        - [drizzle "drizzle-with-vercel-edge-functions"](https://orm.drizzle.team/docs/tutorials/drizzle-with-vercel-edge-functions#vercel-postgres) 
+    - `npm install drizzle-orm pg @vercel/postgres`
+    - `npm install -D drizzle-kit @types/pg`
+    - **IMPORTANT**: to use env variables in `drizzle.config.ts` you need to create and import the following "config.ts" file via `import "@/lib/config"`:
+        ```ts
+        import { loadEnvConfig } from '@next/env';
+        const projectDir = process.cwd();
+        loadEnvConfig(projectDir);
