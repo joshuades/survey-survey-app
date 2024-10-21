@@ -1,16 +1,16 @@
-'use client'
+"use client";
 
-import Link from 'next/link'
-import { Button } from "@/components/ui/button"
-import { useAuth } from '../auth/AuthContext'
-import { Loader2 } from 'lucide-react'
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "../auth/AuthContext";
+import { Loader2 } from "lucide-react";
 
 export default function Header() {
-  const { isAuthenticated, isLoading, logout } = useAuth()
+  const { isAuthenticated, isLoading, logout } = useAuth();
 
   return (
     <header>
-      <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+      <div className="container mx-auto flex items-center justify-between px-4 py-4">
         <Link href="/" className="text-2xl font-bold">
           Survey
         </Link>
@@ -21,7 +21,9 @@ export default function Header() {
               Loading
             </Button>
           ) : isAuthenticated ? (
-            <Button variant="outline" onClick={logout}>Logout</Button>
+            <Button variant="outline" onClick={logout}>
+              Logout
+            </Button>
           ) : (
             <Link href="/login" passHref>
               <Button variant="outline">Login</Button>
@@ -30,5 +32,5 @@ export default function Header() {
         </nav>
       </div>
     </header>
-  )
+  );
 }

@@ -1,20 +1,20 @@
-import '@/lib/config'
+import "@/lib/config";
 // import { eq } from 'drizzle-orm'
-import { usersTable } from './schema'
-import { db } from '.'
+import { usersTable } from "./schema";
+import { db } from ".";
 
 async function main() {
   const user: typeof usersTable.$inferInsert = {
-    name: 'John',
+    name: "John",
     age: 30,
-    email: 'john@example.com',
-  }
+    email: "john@example.com",
+  };
 
-  await db.insert(usersTable).values(user)
-  console.log('New user created!')
+  await db.insert(usersTable).values(user);
+  console.log("New user created!");
 
-  const users = await db.select().from(usersTable)
-  console.log('Getting all users from the database: ', users)
+  const users = await db.select().from(usersTable);
+  console.log("Getting all users from the database: ", users);
 
   //   await db
   //     .update(usersTable)
@@ -28,4 +28,4 @@ async function main() {
   //   console.log('User deleted!')
 }
 
-main()
+main();

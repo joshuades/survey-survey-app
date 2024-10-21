@@ -1,31 +1,31 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { useAuth } from './AuthContext'
-import { Loader2 } from 'lucide-react'
-import { useSearchParams } from 'next/navigation'
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Loader2 } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { useState } from "react";
+import { useAuth } from "./AuthContext";
 
 export default function LoginForm() {
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
-  const { login, isLoading } = useAuth()
-  const searchParams = useSearchParams()
-  const redirectUrl = searchParams.get('redirectUrl')
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const { login, isLoading } = useAuth();
+  const searchParams = useSearchParams();
+  const redirectUrl = searchParams.get("redirectUrl");
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
-    const success = await login(password, redirectUrl || '/')
+    e.preventDefault();
+    setError("");
+    const success = await login(password, redirectUrl || "/");
     if (!success) {
-      setError('Invalid password')
+      setError("Invalid password");
     }
-  }
+  };
 
   return (
-    <Card className="w-full max-w-md mx-auto mt-8">
+    <Card className="mx-auto mt-8 w-full max-w-md">
       <CardHeader>
         <CardTitle>Login</CardTitle>
       </CardHeader>
@@ -46,12 +46,12 @@ export default function LoginForm() {
                 Loading...
               </>
             ) : (
-              'Login'
+              "Login"
             )}
           </Button>
-          {error && <p className="text-red-500 text-sm">{error}</p>}
+          {error && <p className="text-sm text-red-500">{error}</p>}
         </form>
       </CardContent>
     </Card>
-  )
+  );
 }

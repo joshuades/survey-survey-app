@@ -1,65 +1,65 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { PlusCircle, Trash2, Send } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { useState } from "react";
+import { PlusCircle, Trash2, Send } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 
 type Question = {
-  id: number
-  text: string
-  type: 'text' | 'multipleChoice'
-  options?: string[]
-}
+  id: number;
+  text: string;
+  type: "text" | "multipleChoice";
+  options?: string[];
+};
 
 export default function SurveyBuilder() {
-  const [survey, setSurvey] = useState<Question[]>([])
-  const [newQuestion, setNewQuestion] = useState('')
-  const [aiPrompt, setAiPrompt] = useState('')
+  const [survey, setSurvey] = useState<Question[]>([]);
+  const [newQuestion, setNewQuestion] = useState("");
+  const [aiPrompt, setAiPrompt] = useState("");
 
   const addQuestion = () => {
     if (newQuestion.trim()) {
-      setSurvey([...survey, { id: Date.now(), text: newQuestion, type: 'text' }])
-      setNewQuestion('')
+      setSurvey([...survey, { id: Date.now(), text: newQuestion, type: "text" }]);
+      setNewQuestion("");
     }
-  }
+  };
 
   const removeQuestion = (id: number) => {
-    setSurvey(survey.filter((q) => q.id !== id))
-  }
+    setSurvey(survey.filter((q) => q.id !== id));
+  };
 
   const generateAIQuestions = async () => {
     try {
-      const response = await fetch('/api/generate-questions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/generate-questions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt: aiPrompt }),
-      })
-      const data = await response.json()
+      });
+      const data = await response.json();
       if (data.questions) {
         const newQuestions = data.questions.map((text: string) => ({
           id: Date.now() + Math.random(),
           text,
-          type: 'text' as const,
-        }))
-        setSurvey([...survey, ...newQuestions])
-        setAiPrompt('')
+          type: "text" as const,
+        }));
+        setSurvey([...survey, ...newQuestions]);
+        setAiPrompt("");
       }
     } catch (error) {
-      console.error('Failed to generate questions:', error)
+      console.error("Failed to generate questions:", error);
     }
-  }
+  };
 
   return (
-    <div className="container mx-auto p-4 max-w-screen-sm">
+    <div className="container mx-auto max-w-screen-sm p-4">
       <Card className="mb-8">
         <CardHeader>
           <CardTitle>AI Survey Builder</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-4 mb-4">
+          <div className="mb-4 flex gap-4">
             <Input
               placeholder="Enter a new question"
               value={newQuestion}
@@ -69,7 +69,7 @@ export default function SurveyBuilder() {
               <PlusCircle className="mr-2 h-4 w-4" /> Add
             </Button>
           </div>
-          <div className="grid gap-4 grid-cols-1 lg:grid-cols-[minmax(100px,_1fr)_auto]">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(100px,_1fr)_auto]">
             <Textarea
               placeholder="Describe the kind of survey you want to create..."
               value={aiPrompt}
@@ -85,7 +85,7 @@ export default function SurveyBuilder() {
       {survey.map((question) => (
         <Card key={question.id} className="mb-4">
           <CardContent className="pt-6">
-            <div className="flex justify-between items-center">
+            <div className="flex items-center justify-between">
               <p>{question.text}</p>
               <Button variant="ghost" onClick={() => removeQuestion(question.id)}>
                 <Trash2 className="h-4 w-4" />
@@ -103,5 +103,5 @@ export default function SurveyBuilder() {
         </Card>
       )}
     </div>
-  )
+  );
 }

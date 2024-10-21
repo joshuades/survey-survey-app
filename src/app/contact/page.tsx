@@ -1,9 +1,9 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function Contact() {
   return (
     <div className="min-h-screen font-[family-name:var(--font-geist-sans)]">
-      <div className="container mx-auto p-4 max-w-screen-sm">
+      <div className="container mx-auto max-w-screen-sm p-4">
         <Card className="">
           <CardHeader>
             <CardTitle>Contact Page</CardTitle>
@@ -16,5 +16,5 @@ export default function Contact() {
         </Card>
       </div>
     </div>
-  )
+  );
 }
