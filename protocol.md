@@ -26,3 +26,4 @@
         import { loadEnvConfig } from '@next/env';
         const projectDir = process.cwd();
         loadEnvConfig(projectDir);
+- setup prettier to format on save and add script "npm run format"
