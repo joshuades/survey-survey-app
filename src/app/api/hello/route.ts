@@ -1,14 +1,12 @@
 import { getUsers } from "@/db";
+import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
 
-export async function GET() {
-  const users = await getUsers();
-  return NextResponse.json({ users, message: "success" });
-}
+export const GET = auth(async (req) => {
+  if (req.auth) {
+    const users = await getUsers();
+    return NextResponse.json({ users, message: "success" });
+  }
 
-export async function POST(request: Request) {
-  const body = await request.json();
-  const name = body.name || "Guest";
-
-  return NextResponse.json({ message: `Hello, ${name}!` });
-}
+  return Response.json({ message: "Not authenticated" }, { status: 401 });
+}) as any; // TODO: Fix `auth()` return type

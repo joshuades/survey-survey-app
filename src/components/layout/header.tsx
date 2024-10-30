@@ -1,35 +1,24 @@
-"use client";
-
+import { auth } from "@/lib/auth";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { useAuth } from "../auth/AuthContext";
-import { Loader2 } from "lucide-react";
+import UserButton from "../auth/user-button";
 
-export default function Header() {
-  const { isAuthenticated, isLoading, logout } = useAuth();
+export default async function Header() {
+  const session = await auth();
 
   return (
-    <header>
-      <div className="container mx-auto flex items-center justify-between px-4 py-4">
-        <Link href="/" className="text-2xl font-bold">
-          Survey
-        </Link>
-        <nav>
-          {isLoading ? (
-            <Button variant="outline" disabled>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Loading
-            </Button>
-          ) : isAuthenticated ? (
-            <Button variant="outline" onClick={logout}>
-              Logout
-            </Button>
-          ) : (
-            <Link href="/login" passHref>
-              <Button variant="outline">Login</Button>
+    <header className="sticky flex justify-center border-b">
+      <div className="mx-auto flex h-16 w-full max-w-3xl items-center justify-between px-4 sm:px-6">
+        <div className="flex items-center gap-[40px]">
+          <Link href="/" className="text-2xl font-bold">
+            Survey
+          </Link>
+          {session?.user && (
+            <Link href="/profile" className="text-sm font-semibold">
+              My Profile
             </Link>
           )}
-        </nav>
+        </div>
+        <UserButton />
       </div>
     </header>
   );

@@ -29,3 +29,10 @@
     loadEnvConfig(projectDir);
     ```
 - setup prettier to format on save and add script "npm run format"
+  - npm install --save-dev eslint-config-prettier
+  - npm install -D prettier prettier-plugin-tailwindcss
+- setup new authentication
+  - npm install next-auth@beta
+    - check [introduction by leerob](https://www.youtube.com/watch?v=DJvM2lSPn6w&list=LL&index=5&t=601s)
+    - setup with code from [next-auth-example](https://github.com/nextauthjs/next-auth-example/)
+    - setup [Google Authentication](https://www.telerik.com/blogs/how-to-implement-google-authentication-nextjs-app-using-nextauth)
