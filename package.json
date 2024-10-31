@@ -15,15 +15,13 @@
     "format": "prettier src/ --write"
   },
   "dependencies": {
-    "@auth/unstorage-adapter": "^2.0.0",
+    "@auth/drizzle-adapter": "^1.7.2",
     "@hookform/resolvers": "^3.9.0",
     "@radix-ui/react-avatar": "^1.1.1",
     "@radix-ui/react-dropdown-menu": "^2.1.2",
     "@radix-ui/react-label": "^2.1.0",
     "@radix-ui/react-slot": "^1.1.0",
-    "@vercel/kv": "^0.2.4",
     "@vercel/postgres": "^0.10.0",
-    "bcrypt": "^5.1.1",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "drizzle-orm": "^0.35.2",
@@ -36,11 +34,9 @@
     "react-dom": "^18",
     "react-hook-form": "^7.53.1",
     "tailwind-merge": "^2.5.4",
-    "tailwindcss-animate": "^1.0.7",
-    "unstorage": "^1.10.1"
+    "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
-    "@types/bcrypt": "^5.0.2",
     "@types/node": "^20",
     "@types/pg": "^8.11.10",
     "@types/react": "^18",

@@ -1,31 +1,26 @@
-import "@/lib/config";
+// import "@/lib/config";
 // import { eq } from 'drizzle-orm'
-import { usersTable } from "./schema";
-import { db } from ".";
+// import { db } from ".";
+// import { huntersTable } from "./schema";
 
 async function main() {
-  const user: typeof usersTable.$inferInsert = {
-    name: "John",
-    age: 30,
-    email: "john@example.com",
-  };
-
-  await db.insert(usersTable).values(user);
-  console.log("New user created!");
-
-  const users = await db.select().from(usersTable);
-  console.log("Getting all users from the database: ", users);
-
+  // const hunter: typeof huntersTable.$inferInsert = {
+  //   name: "Gon",
+  //   email: "gon@example.com",
+  // };
+  // await db.insert(huntersTable).values(hunter);
+  // console.log("New hunter created!");
+  // const hunters = await db.select().from(huntersTable);
+  // console.log("Getting all hunters from the database: ", hunters);
   //   await db
-  //     .update(usersTable)
+  //     .update(huntersTable)
   //     .set({
-  //       age: 31,
+  //       name: "Freecs",
   //     })
-  //     .where(eq(usersTable.email, user.email));
-  //   console.log('User info updated!')
-
-  //   await db.delete(usersTable).where(eq(usersTable.email, user.email));
-  //   console.log('User deleted!')
+  //     .where(eq(huntersTable.email, hunter.email));
+  //   console.log('Hunter info updated!')
+  //   await db.delete(huntersTable).where(eq(huntersTable.email, hunter.email));
+  //   console.log('Hunter deleted!')
 }
 
 main();

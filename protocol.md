@@ -36,3 +36,4 @@
     - check [introduction by leerob](https://www.youtube.com/watch?v=DJvM2lSPn6w&list=LL&index=5&t=601s)
     - setup with code from [next-auth-example](https://github.com/nextauthjs/next-auth-example/)
     - setup [Google Authentication](https://www.telerik.com/blogs/how-to-implement-google-authentication-nextjs-app-using-nextauth)
+  - use [drizzle adapter](https://authjs.dev/getting-started/adapters/drizzle) as database for authjs
