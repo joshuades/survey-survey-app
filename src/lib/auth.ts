@@ -1,9 +1,13 @@
 import NextAuth from "next-auth";
 import "next-auth/jwt";
 
-import { db } from "@/db";
+// import { db } from "@/db";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import Google from "next-auth/providers/google";
+
+import { sql } from "@vercel/postgres";
+import { drizzle } from "drizzle-orm/vercel-postgres";
+const db = drizzle({ client: sql, casing: "snake_case" });
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   debug: !!process.env.AUTH_DEBUG,

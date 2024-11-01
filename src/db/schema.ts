@@ -1,5 +1,14 @@
-import { boolean, integer, pgTable, primaryKey, text, timestamp } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  integer,
+  pgTable,
+  primaryKey,
+  text,
+  timestamp,
+  varchar,
+} from "drizzle-orm/pg-core";
 import type { AdapterAccountType } from "next-auth/adapters";
+import { timestamps } from "./helpers";
 
 // export const huntersTable = pgTable("hunter", {
 //   id: integer().primaryKey().generatedAlwaysAsIdentity(),
@@ -7,6 +16,12 @@ import type { AdapterAccountType } from "next-auth/adapters";
 //   email: varchar({ length: 255 }).notNull().unique(),
 //   ...timestamps,
 // });
+
+export const survey = pgTable("survey", {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  name: varchar({ length: 255 }).notNull(),
+  ...timestamps,
+});
 
 export const users = pgTable("user", {
   id: text("id")
