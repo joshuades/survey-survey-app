@@ -23,6 +23,15 @@ export const survey = pgTable("survey", {
   ...timestamps,
 });
 
+export const question = pgTable("question", {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  questionText: varchar({ length: 255 }).notNull(),
+  surveyId: integer("surveyId")
+    .notNull()
+    .references(() => survey.id, { onDelete: "cascade" }),
+  ...timestamps,
+});
+
 export const users = pgTable("user", {
   id: text("id")
     .primaryKey()

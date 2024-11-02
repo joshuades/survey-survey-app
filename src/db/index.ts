@@ -3,11 +3,11 @@ import { auth } from "@/lib/auth";
 import { sql } from "@vercel/postgres";
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/vercel-postgres";
-import { survey as surveyTable, users } from "./schema";
+import { question as questionTable, survey as surveyTable, users } from "./schema";
 
-export const db = drizzle({ client: sql, casing: "snake_case" });
+export const db = drizzle(sql);
 
-// SURVEY FUNCTIONS
+// TYPES
 
 export type Survey = {
   id: number;
@@ -17,11 +17,25 @@ export type Survey = {
   deleted_at: Date | null;
 };
 
+export type Question = {
+  id: number;
+  questionText: string;
+  surveyId: number;
+  updated_at: Date | null;
+  created_at: Date;
+  deleted_at: Date | null;
+};
+
+export type SurveysWithQuestions = Record<number, { survey: Survey; questions: Question[] }>;
+
+// SURVEY FUNCTIONS
+
 export async function createSurvey(name: string) {
   const session = await auth();
   if (!session?.user) return { survey: null, message: "unauthenticated" };
 
   const survey = await db.insert(surveyTable).values({ name }).returning();
+  if (!survey || survey.length == 0) return { survey, message: "internal error" };
   return { survey, message: "success" };
 }
 
@@ -29,8 +43,28 @@ export async function getSurveys() {
   const session = await auth();
   if (!session?.user) return { surveys: [], message: "unauthenticated" };
 
-  const surveys = await db.select().from(surveyTable);
-  return { surveys, message: "success" };
+  // join the survey table with the question table
+  const surveys = await db
+    .select()
+    .from(surveyTable)
+    .leftJoin(questionTable, eq(surveyTable.id, questionTable.surveyId));
+
+  // aggregate the questions for each survey
+  const surveysWithQuestions = surveys.reduce<
+    Record<number, { survey: Survey; questions: Question[] }>
+  >((acc, row) => {
+    const survey = row.survey;
+    const question = row.question;
+    if (!acc[survey.id]) {
+      acc[survey.id] = { survey, questions: [] };
+    }
+    if (question) {
+      acc[survey.id].questions.push(question);
+    }
+    return acc;
+  }, {});
+
+  return { surveys: surveysWithQuestions, message: "success" };
 }
 
 export async function getSurveyById(id: number) {
@@ -38,6 +72,7 @@ export async function getSurveyById(id: number) {
   if (!session?.user) return { survey: null, message: "unauthenticated" };
 
   const survey = await db.select().from(surveyTable).where(eq(surveyTable.id, id));
+  if (!survey || survey.length == 0) return { survey, message: "not found" };
   return { survey, message: "success" };
 }
 
@@ -50,6 +85,7 @@ export async function updateSurvey(id: number, name: string) {
     .set({ name })
     .where(eq(surveyTable.id, id))
     .returning();
+  if (!survey || survey.length == 0) return { survey, message: "not found" };
   return { survey, message: "success" };
 }
 
@@ -58,9 +94,67 @@ export async function deleteSurvey(id: number) {
   if (!session?.user) return { survey: null, message: "unauthenticated" };
 
   const survey = await db.delete(surveyTable).where(eq(surveyTable.id, id)).returning();
+  if (!survey || survey.length == 0) return { survey, message: "not found" };
   return { survey, message: "success" };
 }
 
+// QUESTION FUNCTIONS
+
+export async function getQuestionsForSurvey(surveyId: number) {
+  const session = await auth();
+  if (!session?.user) return { questions: [], message: "unauthenticated" };
+
+  const questions = await db
+    .select()
+    .from(questionTable)
+    .where(eq(questionTable.surveyId, surveyId));
+
+  return { questions, message: "success" };
+}
+
+export async function createQuestion(questionText: string, surveyId: number) {
+  const session = await auth();
+  if (!session?.user) return { question: null, message: "unauthenticated" };
+
+  const question = await db.insert(questionTable).values({ questionText, surveyId }).returning();
+  if (!question || question.length == 0) return { question, message: "internal error" };
+
+  return { question, message: "success" };
+}
+
+export async function updateQuestion(id: number, questionText: string) {
+  const session = await auth();
+  if (!session?.user) return { question: null, message: "unauthenticated" };
+
+  const question = await db
+    .update(questionTable)
+    .set({ questionText })
+    .where(eq(questionTable.id, id))
+    .returning();
+  if (!question || question.length == 0) return { question, message: "not found" };
+
+  return { question, message: "success" };
+}
+
+export async function deleteQuestion(id: number) {
+  const session = await auth();
+  if (!session?.user) return { question: null, message: "unauthenticated" };
+
+  const question = await db.delete(questionTable).where(eq(questionTable.id, id)).returning();
+  if (!question || question.length == 0) return { question, message: "not found" };
+  return { question, message: "success" };
+}
+
+export async function getQuestionById(id: number) {
+  const session = await auth();
+  if (!session?.user) return { question: null, message: "unauthenticated" };
+
+  const question = await db.select().from(questionTable).where(eq(questionTable.id, id));
+  if (!question || question.length == 0) return { question, message: "not found" };
+  return { question, message: "success" };
+}
+
+// USER FUNCTIONS
 
 export const getUsers = async () => {
   const selectResult = await db.select().from(users);

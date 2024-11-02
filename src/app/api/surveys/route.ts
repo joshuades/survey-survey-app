@@ -5,7 +5,10 @@ export const GET = async () => {
   const { surveys, message } = await getSurveys();
 
   if (message === "unauthenticated") {
-    return Response.json({ message: "Not authenticated" }, { status: 401 });
+    return Response.json({ error: "Not authenticated" }, { status: 401 });
+  }
+  if (message === "internal error") {
+    return Response.json({ error: "Something went wrong on the server" }, { status: 500 });
   }
   return NextResponse.json({ surveys, message: "success" }, { status: 200 });
 };
@@ -13,12 +16,15 @@ export const GET = async () => {
 export const POST = async (req: NextRequest) => {
   const { name } = await req.json();
   if (!name) {
-    return Response.json({ message: "Survey name not provided" }, { status: 400 });
+    return Response.json({ error: "Survey name not provided" }, { status: 400 });
   }
   const { survey, message } = await createSurvey(name);
 
   if (message === "unauthenticated") {
-    return Response.json({ message: "Not authenticated" }, { status: 401 });
+    return Response.json({ error: "Not authenticated" }, { status: 401 });
+  }
+  if (message === "internal error") {
+    return Response.json({ error: "Something went wrong on the server" }, { status: 500 });
   }
   return NextResponse.json({ survey, message: "Survey created successfully" }, { status: 201 });
 };
