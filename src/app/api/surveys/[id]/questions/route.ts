@@ -14,7 +14,10 @@ export const GET = async (req: NextRequest, context: { params: Params }) => {
   if (message === "unauthenticated") {
     return Response.json({ error: "Not authenticated" }, { status: 401 });
   }
-  return NextResponse.json({ questions, message: "success" }, { status: 200 });
+  if (message === "unauthorized") {
+    return Response.json({ error: "Please log in with the correct account." }, { status: 403 });
+  }
+  return NextResponse.json({ questions }, { status: 200 });
 };
 
 export const POST = async (req: NextRequest, context: { params: Params }) => {
@@ -31,6 +34,9 @@ export const POST = async (req: NextRequest, context: { params: Params }) => {
   }
   if (message === "unauthenticated") {
     return Response.json({ error: "Not authenticated" }, { status: 401 });
+  }
+  if (message === "unauthorized") {
+    return Response.json({ error: "Please log in with the correct account." }, { status: 403 });
   }
   return NextResponse.json({ question, message: "Question created successfully" }, { status: 201 });
 };

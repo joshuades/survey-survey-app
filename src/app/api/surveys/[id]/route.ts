@@ -14,10 +14,13 @@ export const GET = async (req: NextRequest, context: { params: Params }) => {
   if (message === "unauthenticated") {
     return Response.json({ error: "Not authenticated" }, { status: 401 });
   }
+  if (message === "unauthorized") {
+    return Response.json({ error: "Please log in with the correct account." }, { status: 403 });
+  }
   if (message === "not found") {
     return Response.json({ error: "Survey not found" }, { status: 404 });
   }
-  return NextResponse.json({ survey, message: "success" }, { status: 200 });
+  return NextResponse.json({ survey }, { status: 200 });
 };
 
 export const PUT = async (req: NextRequest, context: { params: Params }) => {
@@ -33,7 +36,10 @@ export const PUT = async (req: NextRequest, context: { params: Params }) => {
     return Response.json({ error: "Not authenticated" }, { status: 401 });
   }
   if (message === "not found") {
-    return Response.json({ error: "Survey not found" }, { status: 404 });
+    return Response.json(
+      { error: "Survey not found. Try again with a different account." },
+      { status: 404 }
+    );
   }
   return NextResponse.json({ survey, message: "Survey updated successfully" }, { status: 200 });
 };
@@ -48,7 +54,10 @@ export const DELETE = async (req: NextRequest, context: { params: Params }) => {
     return Response.json({ error: "Not authenticated" }, { status: 401 });
   }
   if (message === "not found") {
-    return Response.json({ error: "Survey not found" }, { status: 404 });
+    return Response.json(
+      { error: "Survey not found. Try again with a different account." },
+      { status: 404 }
+    );
   }
   return NextResponse.json({ survey, message: "Survey deleted successfully" }, { status: 200 });
 };

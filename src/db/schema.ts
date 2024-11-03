@@ -20,6 +20,10 @@ import { timestamps } from "./helpers";
 export const survey = pgTable("survey", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   name: varchar({ length: 255 }).notNull(),
+  userId: text("userId")
+    .default("")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
   ...timestamps,
 });
 

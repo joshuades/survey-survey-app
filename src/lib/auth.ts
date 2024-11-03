@@ -22,22 +22,24 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   basePath: "/auth",
   session: { strategy: "jwt" },
   callbacks: {
-    authorized({ request, auth }) {
-      const { pathname } = request.nextUrl;
-      if (pathname === "/middleware-example") return !!auth;
-      return true;
+    // authorized({ request, auth }) {
+    //   const { pathname } = request.nextUrl;
+    //   if (pathname === "/middleware-example") return !!auth;
+    //   return true;
+    // },
+    session: async ({ session, token }) => {
+      if (session?.user) {
+        if (token.sub) {
+          session.user.id = token.sub;
+        }
+      }
+      return session;
     },
-    jwt({ token, trigger, session, account }) {
-      if (trigger === "update") token.name = session.user.name;
-      if (account?.provider === "keycloak") {
-        return { ...token, accessToken: account.access_token };
+    jwt: async ({ user, token }) => {
+      if (user) {
+        token.uid = user.id;
       }
       return token;
-    },
-    async session({ session, token }) {
-      if (token?.accessToken) session.accessToken = token.accessToken;
-
-      return session;
     },
   },
   experimental: { enableWebAuthn: true },
