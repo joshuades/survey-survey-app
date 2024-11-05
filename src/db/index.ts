@@ -3,7 +3,12 @@ import { auth } from "@/lib/auth";
 import { sql } from "@vercel/postgres";
 import { and, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/vercel-postgres";
-import { question as questionTable, survey as surveyTable, users } from "./schema";
+import {
+  answer as answerTable,
+  question as questionTable,
+  survey as surveyTable,
+  users,
+} from "./schema";
 
 export const db = drizzle(sql);
 
@@ -21,7 +26,21 @@ export type Survey = {
 export type Question = {
   id: number;
   questionText: string;
+  answerType: string;
   surveyId: number;
+  updated_at: Date | null;
+  created_at: Date;
+  deleted_at: Date | null;
+};
+
+export type Answer = {
+  id: number;
+  type: string;
+  answerText?: string | null;
+  answerBoolean?: boolean | null;
+  username: string;
+  email?: string | null;
+  questionId: number;
   updated_at: Date | null;
   created_at: Date;
   deleted_at: Date | null;
@@ -76,13 +95,41 @@ export async function getSurveyById(id: number) {
   const session = await auth();
   if (!session?.user?.id) return { survey: null, message: "unauthenticated" };
 
-  const survey = await db.select().from(surveyTable).where(eq(surveyTable.id, id));
+  const simpleSurvey = await db.select().from(surveyTable).where(eq(surveyTable.id, id));
 
-  if (survey.length > 0 && survey[0].userId !== session?.user?.id) {
+  if (simpleSurvey.length > 0 && simpleSurvey[0].userId !== session?.user?.id) {
     return { message: "unauthorized" };
   }
-  if (!survey || survey.length == 0) return { survey, message: "not found" };
-  return { survey, message: "success" };
+  if (!simpleSurvey || simpleSurvey.length == 0) return { simpleSurvey, message: "not found" };
+
+  // join the question table with the answer table
+  const questions = await db
+    .select()
+    .from(questionTable)
+    .where(eq(questionTable.surveyId, id))
+    .leftJoin(answerTable, eq(questionTable.id, answerTable.questionId));
+
+  const surveyAggregated = questions.reduce<
+    Record<number, { survey: Survey; questions: (Question & { answers: Answer[] })[] }>
+  >((acc, row) => {
+    const survey = simpleSurvey[0];
+    const question = row.question;
+    const answer = row.answer;
+    if (!acc[survey.id]) {
+      acc[survey.id] = { survey, questions: [] };
+    }
+    const existingQuestion = acc[survey.id].questions.find((q) => q.id === question.id);
+    if (existingQuestion) {
+      if (answer) {
+        existingQuestion.answers.push(answer);
+      }
+    } else {
+      acc[survey.id].questions.push({ ...question, answers: answer ? [answer] : [] });
+    }
+    return acc;
+  }, {});
+
+  return { survey: surveyAggregated, message: "success" };
 }
 
 export async function updateSurvey(id: number, name: string) {
@@ -195,6 +242,7 @@ export const getUsers = async () => {
 
 // HELPER FUNCTIONS
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function isAuthorized(surveyId: number, user: any) {
   const survey = await db.select().from(surveyTable).where(eq(surveyTable.id, surveyId));
   if (survey.length > 0 && survey[0].userId !== user.id) {

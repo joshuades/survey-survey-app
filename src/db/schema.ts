@@ -29,9 +29,23 @@ export const survey = pgTable("survey", {
 export const question = pgTable("question", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   questionText: varchar({ length: 255 }).notNull(),
+  answerType: varchar({ length: 50 }).notNull().default("text"), // text, boolean
   surveyId: integer("surveyId")
     .notNull()
     .references(() => survey.id, { onDelete: "cascade" }),
+  ...timestamps,
+});
+
+export const answer = pgTable("answer", {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  type: varchar({ length: 50 }).notNull().default("text"), // text, boolean
+  answerText: varchar({ length: 255 }),
+  answerBoolean: boolean("answerBoolean"),
+  username: varchar({ length: 20 }).default("anonymous").notNull(),
+  email: varchar({ length: 50 }),
+  questionId: integer("questionId")
+    .notNull()
+    .references(() => question.id, { onDelete: "cascade" }),
   ...timestamps,
 });
 
