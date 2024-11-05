@@ -33,11 +33,11 @@ export type SurveysWithQuestions = Record<number, { survey: Survey; questions: Q
 
 export async function createSurvey(name: string) {
   const session = await auth();
-  if (!session?.user) return { survey: null, message: "unauthenticated" };
+  if (!session?.user?.id) return { survey: null, message: "unauthenticated" };
 
   const survey = await db
     .insert(surveyTable)
-    .values({ name, userId: session?.user?.id! })
+    .values({ name, userId: session?.user?.id })
     .returning();
   if (!survey || survey.length == 0) return { survey, message: "internal error" };
   return { survey, message: "success" };
@@ -45,13 +45,13 @@ export async function createSurvey(name: string) {
 
 export async function getSurveys() {
   const session = await auth();
-  if (!session?.user) return { surveys: [], message: "unauthenticated" };
+  if (!session?.user?.id) return { surveys: [], message: "unauthenticated" };
 
   // join the survey table with the question table
   const surveys = await db
     .select()
     .from(surveyTable)
-    .where(eq(surveyTable.userId, session?.user?.id!))
+    .where(eq(surveyTable.userId, session?.user?.id))
     .leftJoin(questionTable, eq(surveyTable.id, questionTable.surveyId));
 
   // aggregate the questions for each survey
@@ -74,7 +74,7 @@ export async function getSurveys() {
 
 export async function getSurveyById(id: number) {
   const session = await auth();
-  if (!session?.user) return { survey: null, message: "unauthenticated" };
+  if (!session?.user?.id) return { survey: null, message: "unauthenticated" };
 
   const survey = await db.select().from(surveyTable).where(eq(surveyTable.id, id));
 
@@ -87,12 +87,12 @@ export async function getSurveyById(id: number) {
 
 export async function updateSurvey(id: number, name: string) {
   const session = await auth();
-  if (!session?.user) return { survey: null, message: "unauthenticated" };
+  if (!session?.user?.id) return { survey: null, message: "unauthenticated" };
 
   const survey = await db
     .update(surveyTable)
     .set({ name })
-    .where(and(eq(surveyTable.id, id), eq(surveyTable.userId, session?.user?.id!)))
+    .where(and(eq(surveyTable.id, id), eq(surveyTable.userId, session?.user?.id)))
     .returning();
   if (!survey || survey.length == 0) return { survey, message: "not found" };
   return { survey, message: "success" };
@@ -100,11 +100,11 @@ export async function updateSurvey(id: number, name: string) {
 
 export async function deleteSurvey(id: number) {
   const session = await auth();
-  if (!session?.user) return { survey: null, message: "unauthenticated" };
+  if (!session?.user?.id) return { survey: null, message: "unauthenticated" };
 
   const survey = await db
     .delete(surveyTable)
-    .where(and(eq(surveyTable.id, id), eq(surveyTable.userId, session?.user?.id!)))
+    .where(and(eq(surveyTable.id, id), eq(surveyTable.userId, session?.user?.id)))
     .returning();
   if (!survey || survey.length == 0) return { survey, message: "not found" };
   return { survey, message: "success" };
