@@ -1,11 +1,13 @@
 "use client";
 
+import { useStore } from "@/store/surveys";
 import { useState } from "react";
 import { Button } from "./ui/button";
 
 const CreateSurveyForm = () => {
   const [name, setName] = useState("");
   const [message, setMessage] = useState("");
+  const { addSurvey } = useStore();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,6 +23,7 @@ const CreateSurveyForm = () => {
     const data = await response.json();
     if (response.ok) {
       setMessage("Survey created successfully!");
+      addSurvey(data.survey[0]);
       setName("");
       console.log("data", data);
     } else {

@@ -39,7 +39,7 @@ export default async function RootLayout({
 
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} text-custom-black antialiased`}>
         <SessionProvider basePath={"/auth"} session={session}>
           <div className="flex min-h-screen flex-col">
             <Header />

@@ -1,7 +1,7 @@
 // import "@/lib/config";
 import { auth } from "@/lib/auth";
 import { sql } from "@vercel/postgres";
-import { and, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/vercel-postgres";
 import {
   answer as answerTable,
@@ -21,6 +21,11 @@ export type Survey = {
   updated_at: Date | null;
   created_at: Date;
   deleted_at: Date | null;
+};
+
+export type AggregatedSurvey = {
+  survey: Survey;
+  questions: (Question & { answers: Answer[] })[];
 };
 
 export type Question = {
@@ -66,29 +71,35 @@ export async function getSurveys() {
   const session = await auth();
   if (!session?.user?.id) return { surveys: [], message: "unauthenticated" };
 
-  // join the survey table with the question table
   const surveys = await db
     .select()
     .from(surveyTable)
     .where(eq(surveyTable.userId, session?.user?.id))
-    .leftJoin(questionTable, eq(surveyTable.id, questionTable.surveyId));
+    .orderBy(desc(surveyTable.updated_at), desc(surveyTable.created_at));
 
-  // aggregate the questions for each survey
-  const surveysWithQuestions = surveys.reduce<
-    Record<number, { survey: Survey; questions: Question[] }>
-  >((acc, row) => {
-    const survey = row.survey;
-    const question = row.question;
-    if (!acc[survey.id]) {
-      acc[survey.id] = { survey, questions: [] };
-    }
-    if (question) {
-      acc[survey.id].questions.push(question);
-    }
-    return acc;
-  }, {});
+  // // join the survey table with the question table
+  // const surveys = await db
+  //   .select()
+  //   .from(surveyTable)
+  //   .where(eq(surveyTable.userId, session?.user?.id))
+  //   .leftJoin(questionTable, eq(surveyTable.id, questionTable.surveyId));
 
-  return { surveys: surveysWithQuestions, message: "success" };
+  // // aggregate the questions for each survey
+  // const surveysWithQuestions = surveys.reduce<
+  //   Record<number, { survey: Survey; questions: Question[] }>
+  // >((acc, row) => {
+  //   const survey = row.survey;
+  //   const question = row.question;
+  //   if (!acc[survey.id]) {
+  //     acc[survey.id] = { survey, questions: [] };
+  //   }
+  //   if (question) {
+  //     acc[survey.id].questions.push(question);
+  //   }
+  //   return acc;
+  // }, {});
+
+  return { surveys, message: "success" };
 }
 
 export async function getSurveyById(id: number) {

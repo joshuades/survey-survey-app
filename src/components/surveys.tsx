@@ -1,27 +1,48 @@
-import { getSurveys } from "@/db";
+"use client";
 
-export default async function Surveys() {
-  const { surveys, message } = await getSurveys();
+import { Survey } from "@/db";
+import { useStore } from "@/store/surveys";
+import { useEffect, useState } from "react";
 
-  if (message === "unauthenticated") {
-    return <p>Sign up to see all Surveys.</p>;
-  }
+type SurveysProps = {
+  surveys: Survey[];
+};
+
+const Surveys: React.FC<SurveysProps> = ({ surveys = [] }) => {
+  const { allSurveys, setAllSurveys } = useStore();
+  const [isLoading, setIsLoading] = useState(true);
+
+  const { selectedSurveyId, toggleSelectedSurveyId } = useStore();
+
+  useEffect(() => {
+    setAllSurveys(surveys);
+    setIsLoading(false);
+  }, []);
+
+  useEffect(() => {
+    console.log("allSurveys", allSurveys);
+  }, [allSurveys]);
 
   return (
-    <div>
-      <h2 className="mb-3 text-2xl font-semibold">My Surveys</h2>
-      <ul className="grid grid-cols-3 gap-2">
-        {Object.values(surveys)?.map(({ survey, questions }) => (
-          <li key={survey.id}>
-            <h4 className="font-semibold">{survey.name}</h4>
-            <ul>
-              {questions.map((q) => {
-                return <li key={q.id}>{q.questionText}</li>;
-              })}
-            </ul>
+    <ul className="flex gap-[15px]">
+      {!isLoading ? (
+        allSurveys?.map((survey) => (
+          <li
+            key={survey.id}
+            onClick={() => toggleSelectedSurveyId(survey.id)}
+            style={{
+              backgroundColor: selectedSurveyId === survey.id ? "lightblue" : "white",
+            }}
+            className="cursor-pointer"
+          >
+            Survey <span className="uppercase">{survey.name}</span>
           </li>
-        ))}
-      </ul>
-    </div>
+        ))
+      ) : (
+        <li>loading...</li>
+      )}
+    </ul>
   );
-}
+};
+
+export default Surveys;

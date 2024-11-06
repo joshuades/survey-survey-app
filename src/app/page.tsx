@@ -1,6 +1,9 @@
 import CreateSurveyForm from "@/components/create-survey-form";
+import MainNavBox from "@/components/main-nav-box";
 import SurveyBuilder from "@/components/surveyBuilder";
 import Surveys from "@/components/surveys";
+import SurveysNav from "@/components/surveys-nav";
+import SurveysWrapper from "@/components/surveys-wrapper";
 
 export default function Home() {
   return (
@@ -9,11 +12,21 @@ export default function Home() {
         <SurveyBuilder />
 
         <div className="surveys">
-          <h1 className="mb-3 text-2xl font-bold">Create Survey</h1>
           <CreateSurveyForm />
         </div>
 
-        <Surveys />
+        <MainNavBox>
+          <div className="grid grid-rows-2 gap-4 lg:grid-rows-[minmax(50px,_1fr)_auto]">
+            <SurveysWrapper>
+              <Surveys surveys={[]} />
+            </SurveysWrapper>
+
+            <div className="flex justify-between">
+              <SurveysNav />
+              <div className="text-lg font-semibold uppercase">MENU MENU</div>
+            </div>
+          </div>
+        </MainNavBox>
       </div>
     </div>
   );
