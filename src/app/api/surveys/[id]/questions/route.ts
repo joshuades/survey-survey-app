@@ -1,12 +1,12 @@
-import { createQuestion, getQuestionsForSurvey } from "@/db";
+import { CollectedQuestion, createQuestions, getQuestionsForSurvey } from "@/db";
 import { NextRequest, NextResponse } from "next/server";
 
-type Params = {
+type GetParams = {
   id: string;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const GET = async (req: NextRequest, context: { params: Params }) => {
+export const GET = async (req: NextRequest, context: { params: GetParams }) => {
   const surveyId = context.params.id;
 
   const { questions, message } = await getQuestionsForSurvey(Number(surveyId));
@@ -20,14 +20,19 @@ export const GET = async (req: NextRequest, context: { params: Params }) => {
   return NextResponse.json({ questions }, { status: 200 });
 };
 
-export const POST = async (req: NextRequest, context: { params: Params }) => {
+type PostParams = {
+  id: string;
+  questions: CollectedQuestion[];
+};
+
+export const POST = async (req: NextRequest, context: { params: PostParams }) => {
   const surveyId = context.params.id;
 
-  const { questionText } = await req.json();
-  if (!questionText) {
-    return Response.json({ error: "Question text not provided" }, { status: 400 });
+  const { questions: collectedQuestions } = await req.json();
+  if (!collectedQuestions) {
+    return Response.json({ error: "Questions not provided" }, { status: 400 });
   }
-  const { question, message } = await createQuestion(questionText, Number(surveyId));
+  const { questions, message } = await createQuestions(collectedQuestions, Number(surveyId));
 
   if (message === "internal error") {
     return Response.json({ error: "Something went wrong on the server" }, { status: 500 });
@@ -38,5 +43,8 @@ export const POST = async (req: NextRequest, context: { params: Params }) => {
   if (message === "unauthorized") {
     return Response.json({ error: "Please log in with the correct account." }, { status: 403 });
   }
-  return NextResponse.json({ question, message: "Question created successfully" }, { status: 201 });
+  return NextResponse.json(
+    { questions, message: "Questions created successfully" },
+    { status: 201 }
+  );
 };

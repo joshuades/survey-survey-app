@@ -23,20 +23,31 @@ export type Survey = {
   deleted_at: Date | null;
 };
 
-export type AggregatedSurvey = {
+export type SurveysWithQuestions = {
+  survey: Survey | null;
+  questions: Question[];
+};
+
+export type FullSurvey = {
   survey: Survey;
   questions: (Question & { answers: Answer[] })[];
 };
 
-export type Question = {
-  id: number;
+export interface CollectedQuestion {
   questionText: string;
   answerType: string;
-  surveyId: number;
   updated_at: Date | null;
   created_at: Date;
+}
+
+export interface Question extends CollectedQuestion {
+  id: number;
+  surveyId: number;
+  // questionText: string;
+  // updated_at: Date | null;
+  // created_at: Date;
   deleted_at: Date | null;
-};
+}
 
 export type Answer = {
   id: number;
@@ -51,11 +62,9 @@ export type Answer = {
   deleted_at: Date | null;
 };
 
-export type SurveysWithQuestions = Record<number, { survey: Survey; questions: Question[] }>;
-
 // SURVEY FUNCTIONS
 
-export async function createSurvey(name: string) {
+export async function createSurvey(name: string, collectedQuestions: CollectedQuestion[]) {
   const session = await auth();
   if (!session?.user?.id) return { survey: null, message: "unauthenticated" };
 
@@ -64,7 +73,21 @@ export async function createSurvey(name: string) {
     .values({ name, userId: session?.user?.id })
     .returning();
   if (!survey || survey.length == 0) return { survey, message: "internal error" };
-  return { survey, message: "success" };
+
+  if (collectedQuestions.length > 0) {
+    const result = await createQuestions(collectedQuestions, survey[0].id, true);
+    if (result.message !== "success") {
+      return { survey, message: result.message };
+    }
+  }
+
+  const { survey: surveyWithQuestions, message } = await getSurveyById(survey[0].id, true);
+
+  if (message !== "success") {
+    return { survey: surveyWithQuestions, message };
+  }
+
+  return { survey: surveyWithQuestions, message: "success" };
 }
 
 export async function getSurveys() {
@@ -102,7 +125,43 @@ export async function getSurveys() {
   return { surveys, message: "success" };
 }
 
-export async function getSurveyById(id: number) {
+export async function getSurveyById(id: number, alreadyAuthorized: boolean = false) {
+  if (!alreadyAuthorized) {
+    const session = await auth();
+    if (!session?.user?.id) return { survey: null, message: "unauthenticated" };
+  }
+
+  // join survey with the question table
+  const survey = await db
+    .select()
+    .from(surveyTable)
+    .where(eq(surveyTable.id, id))
+    .leftJoin(questionTable, eq(surveyTable.id, questionTable.surveyId));
+
+  if (!alreadyAuthorized) {
+    const session = await auth();
+    if (survey.length > 0 && survey[0].survey.userId !== session?.user?.id) {
+      return { message: "unauthorized" };
+    }
+  }
+  if (!survey || survey.length == 0) return { survey: null, message: "not found" };
+
+  // aggregate questions for each survey
+  const surveyAggregated = survey.reduce<{ survey: Survey; questions: Question[] }>(
+    (acc, row) => {
+      const question = row.question;
+      if (question) {
+        acc.questions.push(question);
+      }
+      return acc;
+    },
+    { survey: survey[0].survey, questions: [] }
+  );
+
+  return { survey: surveyAggregated, message: "success" };
+}
+
+export async function getFullSurveyById(id: number) {
   const session = await auth();
   if (!session?.user?.id) return { survey: null, message: "unauthenticated" };
 
@@ -186,7 +245,7 @@ export async function getQuestionsForSurvey(surveyId: number) {
   return { questions, message: "success" };
 }
 
-export async function createQuestion(questionText: string, surveyId: number) {
+export async function createQuestion(collectedQuestion: CollectedQuestion, surveyId: number) {
   const session = await auth();
   if (!session?.user) return { question: null, message: "unauthenticated" };
 
@@ -194,10 +253,44 @@ export async function createQuestion(questionText: string, surveyId: number) {
     return { question: null, message: "unauthorized" };
   }
 
-  const question = await db.insert(questionTable).values({ questionText, surveyId }).returning();
+  const question = await db
+    .insert(questionTable)
+    .values({ ...collectedQuestion, surveyId })
+    .returning();
   if (!question || question.length == 0) return { question, message: "internal error" };
 
   return { question, message: "success" };
+}
+
+export async function createQuestions(
+  collectedQuestions: CollectedQuestion[],
+  surveyId: number,
+  alreadyAuthorized: boolean = false
+) {
+  if (!alreadyAuthorized) {
+    const session = await auth();
+    if (!session?.user) return { questions: [], message: "unauthenticated" };
+    if (!(await isAuthorized(surveyId, session?.user))) {
+      return { questions: [], message: "unauthorized" };
+    }
+  }
+
+  const questions = await db
+    .insert(questionTable)
+    .values(
+      collectedQuestions.map(({ created_at, updated_at, ...rest }) => ({
+        ...rest,
+        surveyId,
+        created_at: new Date(created_at),
+        updated_at: updated_at ? new Date(updated_at) : null,
+      }))
+    )
+    .returning();
+
+  if (!questions || questions.length == 0) {
+    return { questions, message: "internal error" };
+  }
+  return { questions, message: "success" };
 }
 
 export async function updateQuestion(id: number, questionText: string, surveyId: number) {

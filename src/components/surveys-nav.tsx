@@ -1,10 +1,20 @@
 "use client";
 
 import { useStore } from "@/store/surveys";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { Button } from "./ui/button";
 
 const SurveysNav: React.FC = () => {
-  const { selectedSurveyId, toggleSelectedSurveyId, removeSurvey } = useStore();
+  const {
+    selectedSurveyId,
+    toggleSelectedSurveyId,
+    removeSurvey,
+    collectedQuestions,
+    setCollectedQuestions,
+    setCurrentSurvey,
+  } = useStore();
+  const router = useRouter();
   const [disableNav, setDisableNav] = useState(false);
 
   type SurveyNavOptionType = {
@@ -12,8 +22,20 @@ const SurveysNav: React.FC = () => {
     onClick: (surveyId: number) => void;
   };
 
+  const handleEdit = () => {
+    if (collectedQuestions.length > 0) {
+      if (confirm("Are you sure you don't want to save your changes?")) {
+        setCollectedQuestions([]);
+        setCurrentSurvey({ survey: null, questions: [] });
+        router.push(`/builder/${selectedSurveyId}`, { scroll: true });
+      }
+    } else {
+      router.push(`/builder/${selectedSurveyId}`, { scroll: true });
+    }
+  };
+
   const surveyNavOptions: SurveyNavOptionType[] = [
-    { name: "edit", onClick: () => console.log("edit") },
+    { name: "edit", onClick: () => handleEdit() },
     { name: "results", onClick: () => console.log("results") },
     { name: "share", onClick: () => console.log("share") },
     {
@@ -32,13 +54,18 @@ const SurveysNav: React.FC = () => {
       },
       // body: JSON.stringify({ id: id }),
     });
+
+    if (!response.ok) {
+      console.error("Failed to delete survey, check api response: ", response);
+      return;
+    }
+
     const data = await response.json();
     if (response.ok) {
       // delete in state
       toggleSelectedSurveyId(id);
       removeSurvey(id); // same as data.survey[0].id
       setDisableNav(false);
-      console.log("Survey deleted successfully:", data);
     } else {
       console.error("Failed to delete survey:", data);
     }
@@ -48,14 +75,13 @@ const SurveysNav: React.FC = () => {
     <ul className="flex gap-[15px] text-lg font-semibold uppercase">
       {selectedSurveyId &&
         surveyNavOptions.map((option) => (
-          <button
+          <Button
             key={option.name}
-            className="cursor-pointer uppercase"
             onClick={() => option.onClick(selectedSurveyId)}
             disabled={disableNav}
           >
             {option.name}
-          </button>
+          </Button>
         ))}
     </ul>
   );

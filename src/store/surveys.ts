@@ -1,8 +1,9 @@
-import { AggregatedSurvey, Question, Survey } from "@/db";
+import { CollectedQuestion, Survey, SurveysWithQuestions } from "@/db";
 import { create } from "zustand";
 
 export interface SurveyState {
-  survey: AggregatedSurvey | null;
+  currentSurvey: SurveysWithQuestions | null;
+  collectedQuestions: CollectedQuestion[];
   newQuestion: string;
   aiPrompt: string;
   allSurveys: Survey[];
@@ -10,8 +11,9 @@ export interface SurveyState {
 }
 
 export interface SurveyActions {
-  setSurvey: (survey: AggregatedSurvey) => void;
-  addQuestionToSurvey: (question: Question) => void;
+  setCurrentSurvey: (survey: SurveysWithQuestions) => void;
+  setCollectedQuestions: (collectedQuestions: CollectedQuestion[]) => void;
+  addCollectedQuestion: (question: CollectedQuestion) => void;
   setNewQuestion: (newQuestion: string) => void;
   setAiPrompt: (aiPrompt: string) => void;
   setAllSurveys: (allSurveys: Survey[]) => void;
@@ -21,18 +23,16 @@ export interface SurveyActions {
 }
 
 export const useStore = create<SurveyState & SurveyActions>()((set) => ({
-  survey: null,
+  currentSurvey: null,
+  collectedQuestions: [],
   newQuestion: "",
   aiPrompt: "",
   allSurveys: [],
   selectedSurveyId: null,
-  setSurvey: (survey: AggregatedSurvey) => set({ survey }),
-  addQuestionToSurvey: (question: Question) =>
-    set((state) =>
-      state.survey
-        ? { survey: { ...state.survey }, questions: [...state.survey.questions, question] }
-        : { survey: null, questions: [question] }
-    ),
+  setCurrentSurvey: (survey: SurveysWithQuestions) => set({ currentSurvey: survey }),
+  setCollectedQuestions: (collectedQuestions: CollectedQuestion[]) => set({ collectedQuestions }),
+  addCollectedQuestion: (question: CollectedQuestion) =>
+    set((state) => ({ collectedQuestions: [...state.collectedQuestions, question] })),
   setNewQuestion: (newQuestion: string) => set({ newQuestion }),
   setAiPrompt: (aiPrompt: string) => set({ aiPrompt }),
   setAllSurveys: (allSurveys: Survey[]) => set({ allSurveys }),

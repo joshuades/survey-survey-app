@@ -1,10 +1,7 @@
-import { auth } from "@/lib/auth";
 import Link from "next/link";
 import UserButton from "../auth/user-button";
 
 export default async function Header() {
-  const session = await auth();
-
   return (
     <header className="sticky flex justify-center border-b">
       <div className="mx-auto flex h-16 w-full max-w-3xl items-center justify-between px-4 sm:px-6">
@@ -12,11 +9,6 @@ export default async function Header() {
           <Link href="/" className="text-2xl font-bold">
             Survey
           </Link>
-          {session?.user && (
-            <Link href="/profile" className="text-sm font-semibold">
-              My Profile
-            </Link>
-          )}
         </div>
         <UserButton />
       </div>

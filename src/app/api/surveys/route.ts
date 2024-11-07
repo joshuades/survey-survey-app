@@ -14,11 +14,11 @@ export const GET = async () => {
 };
 
 export const POST = async (req: NextRequest) => {
-  const { name } = await req.json();
+  const { name, questions } = await req.json();
   if (!name) {
     return Response.json({ error: "Survey name not provided" }, { status: 400 });
   }
-  const { survey, message } = await createSurvey(name);
+  const { survey, message } = await createSurvey(name, questions);
 
   if (message === "unauthenticated") {
     return Response.json({ error: "Not authenticated" }, { status: 401 });

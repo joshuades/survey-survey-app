@@ -9,9 +9,17 @@ const config: Config = {
   ],
   theme: {
     colors: {
-      "custom-grey-bg": "#F7F7F7",
       "custom-black": "#313131",
+      "custom-black-hover": "#535252",
+      "custom-grey-bg": "#F7F7F7",
+      "custom-grey-bg-skeleton": "#edebeb",
       "custom-orange": "#FDCA8D",
+    },
+    screens: {
+      sm: "480px",
+      md: "768px",
+      lg: "976px",
+      xl: "1440px",
     },
     extend: {
       colors: {

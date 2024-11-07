@@ -14,6 +14,7 @@ body {
 
 @layer base {
   :root {
+    --custom-border-radius: 2px;
     --background: 0 0% 100%;
     --foreground: 240 10% 3.9%;
     --card: 0 0% 100%;
