@@ -3,17 +3,22 @@ import { create } from "zustand";
 
 export interface SurveyState {
   currentSurvey: SurveysWithQuestions | null;
-  collectedQuestions: CollectedQuestion[];
+  currentChanges: CurrentChanges;
   newQuestion: string;
   aiPrompt: string;
   allSurveys: Survey[];
   selectedSurveyId: number | null;
 }
 
+export interface CurrentChanges {
+  surveyId: number | null;
+  collectedQuestions: CollectedQuestion[];
+}
+
 export interface SurveyActions {
   setCurrentSurvey: (survey: SurveysWithQuestions) => void;
-  setCollectedQuestions: (collectedQuestions: CollectedQuestion[]) => void;
-  addCollectedQuestion: (question: CollectedQuestion) => void;
+  setCurrentChanges: (currentChanges: CurrentChanges) => void;
+  addCollectedQuestion: (question: CollectedQuestion, surveyId: number | null) => void;
   setNewQuestion: (newQuestion: string) => void;
   setAiPrompt: (aiPrompt: string) => void;
   setAllSurveys: (allSurveys: Survey[]) => void;
@@ -24,15 +29,23 @@ export interface SurveyActions {
 
 export const useStore = create<SurveyState & SurveyActions>()((set) => ({
   currentSurvey: null,
-  collectedQuestions: [],
+  currentChanges: { surveyId: null, collectedQuestions: [] },
   newQuestion: "",
   aiPrompt: "",
   allSurveys: [],
   selectedSurveyId: null,
   setCurrentSurvey: (survey: SurveysWithQuestions) => set({ currentSurvey: survey }),
-  setCollectedQuestions: (collectedQuestions: CollectedQuestion[]) => set({ collectedQuestions }),
-  addCollectedQuestion: (question: CollectedQuestion) =>
-    set((state) => ({ collectedQuestions: [...state.collectedQuestions, question] })),
+  setCurrentChanges: (currentChanges: CurrentChanges) => set({ currentChanges }),
+  addCollectedQuestion: (question: CollectedQuestion, newSurveyId: number | null) =>
+    set((state) => ({
+      currentChanges: {
+        surveyId: newSurveyId,
+        collectedQuestions:
+          state.currentChanges.surveyId === newSurveyId
+            ? [...state.currentChanges.collectedQuestions, question]
+            : [question],
+      },
+    })),
   setNewQuestion: (newQuestion: string) => set({ newQuestion }),
   setAiPrompt: (aiPrompt: string) => set({ aiPrompt }),
   setAllSurveys: (allSurveys: Survey[]) => set({ allSurveys }),

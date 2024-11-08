@@ -1,19 +1,14 @@
 "use client";
 
+import { checkForSurveyChanges } from "@/lib/utils";
 import { useStore } from "@/store/surveys";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "./ui/button";
 
 const SurveysNav: React.FC = () => {
-  const {
-    selectedSurveyId,
-    toggleSelectedSurveyId,
-    removeSurvey,
-    collectedQuestions,
-    setCollectedQuestions,
-    setCurrentSurvey,
-  } = useStore();
+  const { currentSurvey, selectedSurveyId, toggleSelectedSurveyId, removeSurvey, currentChanges } =
+    useStore();
   const router = useRouter();
   const [disableNav, setDisableNav] = useState(false);
 
@@ -23,10 +18,8 @@ const SurveysNav: React.FC = () => {
   };
 
   const handleEdit = () => {
-    if (collectedQuestions.length > 0) {
+    if (checkForSurveyChanges(currentSurvey, currentChanges)) {
       if (confirm("Are you sure you don't want to save your changes?")) {
-        setCollectedQuestions([]);
-        setCurrentSurvey({ survey: null, questions: [] });
         router.push(`/builder/${selectedSurveyId}`, { scroll: true });
       }
     } else {

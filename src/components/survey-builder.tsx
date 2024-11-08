@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SurveysWithQuestions } from "@/db";
+import { checkForSurveyChanges } from "@/lib/utils";
 import { useStore } from "@/store/surveys";
 import { useEffect, useState } from "react";
 import SurveySubmitButton from "./survey-submit-button";
@@ -14,9 +15,9 @@ export default function SurveyBuilder({ survey }: { survey: SurveysWithQuestions
 
   const {
     currentSurvey,
-    collectedQuestions,
+    currentChanges,
     addCollectedQuestion,
-    setCollectedQuestions,
+    setCurrentChanges,
     setCurrentSurvey,
   } = useStore();
 
@@ -35,13 +36,14 @@ export default function SurveyBuilder({ survey }: { survey: SurveysWithQuestions
         created_at: new Date(),
         updated_at: new Date(),
       };
-      addCollectedQuestion(collectedQuestion);
+      addCollectedQuestion(collectedQuestion, survey?.survey?.id || null);
+
       setNewQuestionText("");
     }
   };
 
   return (
-    <div className="container grid max-w-screen-sm gap-[50px]">
+    <div className="grid w-full gap-[60px]">
       <div className="grid gap-[15px] align-baseline">
         <p className="mx-2">What is your survey about?</p>
         <Input
@@ -57,10 +59,10 @@ export default function SurveyBuilder({ survey }: { survey: SurveysWithQuestions
       <div>
         {!isLoading ? (
           <>
-            {collectedQuestions?.length > 0 || currentSurvey?.questions ? (
-              <>
-                <ul className="mx-2 flex flex-col gap-[25px] text-[32px] font-light">
-                  {collectedQuestions?.map((question) => (
+            {checkForSurveyChanges(currentSurvey, currentChanges) || currentSurvey?.questions ? (
+              <ul className="mx-2 flex flex-col gap-[25px] text-[32px] font-light">
+                {checkForSurveyChanges(currentSurvey, currentChanges) &&
+                  currentChanges.collectedQuestions?.map((question) => (
                     <li
                       key={question.created_at.getTime()}
                       className="grid grid-cols-[auto,_min-content]"
@@ -72,7 +74,12 @@ export default function SurveyBuilder({ survey }: { survey: SurveysWithQuestions
                         <Button
                           variant={"secondary"}
                           onClick={() =>
-                            setCollectedQuestions(collectedQuestions.filter((q) => q !== question))
+                            setCurrentChanges({
+                              surveyId: survey?.survey?.id || null,
+                              collectedQuestions: currentChanges.collectedQuestions.filter(
+                                (q) => q.created_at.getTime() !== question.created_at.getTime()
+                              ),
+                            })
                           }
                         >
                           Remove
@@ -80,11 +87,10 @@ export default function SurveyBuilder({ survey }: { survey: SurveysWithQuestions
                       </div>
                     </li>
                   ))}
-                  {currentSurvey?.questions.map((question) => (
-                    <li key={question.id}>{question.questionText}</li>
-                  ))}
-                </ul>
-              </>
+                {currentSurvey?.questions.map((question) => (
+                  <li key={question.id}>{question.questionText}</li>
+                ))}
+              </ul>
             ) : (
               ""
             )}
@@ -100,13 +106,16 @@ export default function SurveyBuilder({ survey }: { survey: SurveysWithQuestions
 
       {!isLoading ? (
         <>
-          {collectedQuestions?.length > 0 && (
+          {checkForSurveyChanges(currentSurvey, currentChanges) && (
             <div className="mx-2 flex justify-between gap-5">
               <SurveySubmitButton />
               <Button
                 onClick={() => {
                   if (confirm("Are you sure you want to delete all survey changes?"))
-                    setCollectedQuestions([]);
+                    setCurrentChanges({
+                      surveyId: survey?.survey?.id || null,
+                      collectedQuestions: [],
+                    });
                 }}
                 variant={"secondary"}
               >
