@@ -12,16 +12,20 @@ export async function POST(req: Request) {
     const completion = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
       messages: [
-        { role: "system", content: "You are a helpful assistant that generates survey questions." },
+        {
+          role: "system",
+          content:
+            "You are a helpful assistant that generates survey questions. Each question should have no symbol in front, just the plain question.",
+        },
         { role: "user", content: `Generate 3 survey questions about: ${prompt}` },
       ],
     });
 
-    const questions = completion?.choices[0]?.message?.content
+    const questionTexts = completion?.choices[0]?.message?.content
       ?.split("\n")
       .filter((q) => q.trim() !== "");
 
-    return NextResponse.json({ questions });
+    return NextResponse.json({ questionTexts });
   } catch (error) {
     console.error("Error:", error);
     return NextResponse.json({ error: "Failed to generate questions" }, { status: 500 });

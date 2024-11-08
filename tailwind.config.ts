@@ -14,7 +14,8 @@ const config: Config = {
       "custom-black-disabled": "#d6cdcd",
       "custom-grey-bg": "#F7F7F7",
       "custom-grey-bg-skeleton": "#edebeb",
-      "custom-orange": "#FDCA8D",
+      "custom-orange": "#e6932f",
+      "custom-orange-light": "#FDCA8D",
     },
     screens: {
       sm: "480px",

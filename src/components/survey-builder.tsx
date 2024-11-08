@@ -11,9 +11,9 @@ import SurveySubmitButton from "./survey-submit-button";
 import { Skeleton } from "./ui/skeleton";
 
 export default function SurveyBuilder({ survey }: { survey: SurveysWithQuestions }) {
-  const [newQuestionText, setNewQuestionText] = useState("");
-  // const [aiPrompt, setAiPrompt] = useState("");
+  const [currentInput, setCurrentInput] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [inputMessage, setInputMessage] = useState("");
 
   const {
     currentSurvey,
@@ -31,41 +31,59 @@ export default function SurveyBuilder({ survey }: { survey: SurveysWithQuestions
   }, []);
 
   const addQuestion = () => {
-    if (newQuestionText.trim()) {
-      const collectedQuestion = {
-        questionText: newQuestionText,
-        answerType: "text",
-        created_at: new Date(),
-        updated_at: new Date(),
-      };
-      addCollectedQuestion(collectedQuestion, survey?.survey?.id || null);
-
-      // setSurvey([...survey, { id: Date.now(), text: newQuestion, type: "text" }]);
-      setNewQuestionText("");
+    if (!currentInput.trim()) {
+      setInputMessage("Type something above to add a question!");
+      return;
     }
+    const collectedQuestion = {
+      questionText: currentInput,
+      answerType: "text",
+      created_at: new Date(),
+      updated_at: new Date(),
+    };
+    addCollectedQuestion(collectedQuestion, survey?.survey?.id || null);
+    setCurrentInput("");
+    setInputMessage("");
   };
 
-  // const generateAIQuestions = async () => {
-  //   try {
-  //     const response = await fetch("/api/generate-questions", {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify({ prompt: aiPrompt }),
-  //     });
-  //     const data = await response.json();
-  //     if (data.questions) {
-  //       const newQuestions = data.questions.map((text: string) => ({
-  //         id: Date.now() + Math.random(),
-  //         text,
-  //         type: "text" as const,
-  //       }));
-  //       setSurvey([...survey, ...newQuestions]);
-  //       setAiPrompt("");
-  //     }
-  //   } catch (error) {
-  //     console.error("Failed to generate questions:", error);
-  //   }
-  // };
+  const generateAIQuestions = async () => {
+    if (!currentInput.trim()) {
+      setInputMessage("Type something above to generate questions!");
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/generate-questions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: currentInput }),
+      });
+      const data = await response.json();
+      if (data.questionTexts) {
+        console.log("Generated questions:", data.questionTexts);
+        const aiQuestions = data.questionTexts?.map((text: string, i: number) => {
+          const d = new Date();
+          d.setSeconds(d.getSeconds() + i);
+          return {
+            questionText: text,
+            answerType: "text",
+            created_at: d,
+            updated_at: null,
+          };
+        });
+
+        setCurrentChanges({
+          surveyId: survey?.survey?.id || null,
+          collectedQuestions: [...currentChanges.collectedQuestions, ...aiQuestions],
+        });
+
+        setCurrentInput("");
+        setInputMessage("");
+      }
+    } catch (error) {
+      console.error("Failed to generate questions:", error);
+    }
+  };
 
   return (
     <div className="grid w-full gap-[60px]">
@@ -74,13 +92,15 @@ export default function SurveyBuilder({ survey }: { survey: SurveysWithQuestions
           <p className="mx-2">What is your survey about?</p>
           <Input
             placeholder=""
-            value={newQuestionText}
-            onChange={(e) => setNewQuestionText(e.target.value)}
+            value={currentInput}
+            onChange={(e) => setCurrentInput(e.target.value)}
             className="mx-auto h-[60px] max-w-[96vw] text-[36px] font-bold"
           />
-          <Button className="mx-2" onClick={addQuestion}>
-            Add Question
-          </Button>
+          {inputMessage ? <p className="text-custom-orange mx-2">{inputMessage}</p> : ""}
+          <div className="mx-2 flex justify-between gap-3">
+            <Button onClick={generateAIQuestions}>Generate</Button>
+            <Button onClick={addQuestion}>Add Question</Button>
+          </div>
         </div>
       </FadeInWrapper>
       <div>
@@ -93,12 +113,13 @@ export default function SurveyBuilder({ survey }: { survey: SurveysWithQuestions
                     currentChanges.collectedQuestions?.map((question) => (
                       <li
                         key={question.created_at.getTime()}
-                        className="grid grid-cols-[auto,_min-content]"
+                        className="grid grid-cols-[auto,_min-content] gap-2"
                       >
                         <div>
-                          {question.questionText} - {question.created_at.toLocaleString()}
+                          {question.questionText}{" "}
+                          <span className="text-sm font-semibold uppercase">new</span>
                         </div>
-                        <div className="flex flex-col justify-end">
+                        <div className="flex flex-col justify-end pb-[10px]">
                           <Button
                             variant={"secondary"}
                             onClick={() =>
