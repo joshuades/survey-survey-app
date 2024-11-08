@@ -5,12 +5,12 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
         default:
-          "font-bold uppercase text-lg lg:text-[19px] hover:text-custom-black-hover leading-[1em]",
+          "font-bold uppercase text-lg lg:text-[19px] hover:text-custom-black-hover leading-[1em] disabled:text-custom-black-disabled",
         secondary: "underline-offset-2 underline",
         link: "text-primary underline-offset-4 hover:underline",
         shadcn: "bg-primary text-primary-foreground hover:bg-primary/90",

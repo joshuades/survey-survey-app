@@ -1,4 +1,5 @@
 import GeneralNav from "@/components/general-nav";
+import MainHeadline from "@/components/main-headline";
 import MainNavBox from "@/components/main-nav-box";
 import SurveyBuilder from "@/components/survey-builder";
 import Surveys from "@/components/surveys";
@@ -9,7 +10,7 @@ export default function Home() {
   return (
     <div className="flex min-h-screen flex-col items-center font-[family-name:var(--font-geist-sans)]">
       <div className="flex w-full max-w-[600px] flex-col gap-11 py-10 xl:max-w-[800px]">
-        <h1 className="text-[calc(1rem_+_5vw)] font-extrabold">SurveySurvey</h1>
+        <MainHeadline>SurveySurvey</MainHeadline>
 
         <SurveyBuilder survey={{ survey: null, questions: [] }} />
 

@@ -22,7 +22,8 @@ export default async function UserButton() {
             <Avatar className="h-8 w-8">
               <AvatarImage
                 src={
-                  session.user.image ??
+                  // session.user.image ??
+                  // SEEDS: 19277, 17370, 31415
                   `https://api.dicebear.com/9.x/thumbs/svg?seed=${Math.floor(Math.random() * 100000) + 1}&randomizeIds=true`
                 }
                 alt={session.user.name ?? ""}

@@ -1,4 +1,5 @@
 import GeneralNav from "@/components/general-nav";
+import MainHeadline from "@/components/main-headline";
 import MainNavBox from "@/components/main-nav-box";
 import SurveyBuilder from "@/components/survey-builder";
 import Surveys from "@/components/surveys";
@@ -19,9 +20,9 @@ export default async function BuilderPage({ params }: { params: Promise<{ id: st
   return (
     <div className="flex min-h-screen flex-col items-center font-[family-name:var(--font-geist-sans)]">
       <div className="flex w-full max-w-[600px] flex-col gap-11 py-10 xl:max-w-[800px]">
-        <h1 className="text-[calc(1rem_+_5vw)] font-bold">
-          Survey <span className="uppercase">{survey.name}</span>{" "}
-        </h1>
+        <MainHeadline>
+          Survey <span className="uppercase">{survey.name}</span>
+        </MainHeadline>
 
         <SurveyBuilder survey={surveyWithQuestions} />
 

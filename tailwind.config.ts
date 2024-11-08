@@ -11,6 +11,7 @@ const config: Config = {
     colors: {
       "custom-black": "#313131",
       "custom-black-hover": "#535252",
+      "custom-black-disabled": "#d6cdcd",
       "custom-grey-bg": "#F7F7F7",
       "custom-grey-bg-skeleton": "#edebeb",
       "custom-orange": "#FDCA8D",

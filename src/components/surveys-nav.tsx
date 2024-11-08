@@ -15,6 +15,7 @@ const SurveysNav: React.FC = () => {
   type SurveyNavOptionType = {
     name: string;
     onClick: (surveyId: number) => void;
+    disabled?: boolean;
   };
 
   const handleEdit = () => {
@@ -28,9 +29,13 @@ const SurveysNav: React.FC = () => {
   };
 
   const surveyNavOptions: SurveyNavOptionType[] = [
-    { name: "edit", onClick: () => handleEdit() },
-    { name: "results", onClick: () => console.log("results") },
-    { name: "share", onClick: () => console.log("share") },
+    {
+      name: "edit",
+      onClick: () => handleEdit(),
+      disabled: currentSurvey?.survey?.id === selectedSurveyId,
+    },
+    { name: "results", onClick: () => console.log("results"), disabled: false },
+    { name: "share", onClick: () => console.log("share"), disabled: false },
     {
       name: "del",
       onClick: (surveyId: number) => handleDelete(surveyId),
@@ -71,7 +76,7 @@ const SurveysNav: React.FC = () => {
           <Button
             key={option.name}
             onClick={() => option.onClick(selectedSurveyId)}
-            disabled={disableNav}
+            disabled={disableNav || option.disabled}
           >
             {option.name}
           </Button>

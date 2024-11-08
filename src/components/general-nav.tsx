@@ -7,7 +7,7 @@ const GeneralNav: React.FC = async () => {
   const session = await auth();
 
   return (
-    <ul className="flex gap-4 text-lg font-semibold uppercase sm:ms-auto">
+    <ul className="flex gap-4 sm:ms-auto">
       {session?.user && (
         <Button asChild>
           <Link href="/profile" className="">
