@@ -14,29 +14,28 @@ const Questions: FC = () => {
     addCollectedDelete,
   } = useStore();
 
-  const handleDeleteQuestion = (question: Question | CollectedQuestion): void => {
-    // if question new, remove from currentChanges
-    if (question.id === 0) {
-      setCurrentChanges({
-        ...currentChanges,
-        surveyId: currentSurvey?.survey?.id || null,
-        collectedQuestions: currentChanges.collectedQuestions.filter(
-          (q) => q.created_at.getTime() !== question.created_at.getTime()
-        ),
-      });
-    } else {
-      // if question not new, remove from currentSurvey
-      setCurrentSurvey({
-        ...currentSurvey,
-        survey: currentSurvey?.survey || null,
-        questions: currentSurvey?.questions?.filter((q) => q.id !== question.id) || [],
-      });
-      const resetSuccessful = resetChanges(currentSurvey?.survey?.id || null);
-      if (resetSuccessful) {
-        addCollectedDelete({ questionId: question.id });
-        console.log("Current changes AFTER:", currentChanges);
-      }
+  const handleDeleteQuestion = (question: Question): void => {
+    // if question not new, remove from currentSurvey
+    setCurrentSurvey({
+      ...currentSurvey,
+      survey: currentSurvey?.survey || null,
+      questions: currentSurvey?.questions?.filter((q) => q.id !== question.id) || [],
+    });
+    const resetSuccessful = resetChanges(currentSurvey?.survey?.id || null);
+    if (resetSuccessful) {
+      addCollectedDelete({ questionId: question.id });
+      console.log("Current changes AFTER:", currentChanges);
     }
+  };
+
+  const handleDeleteNewQuestion = (question: CollectedQuestion): void => {
+    setCurrentChanges({
+      ...currentChanges,
+      surveyId: currentSurvey?.survey?.id || null,
+      collectedQuestions: currentChanges.collectedQuestions.filter(
+        (q) => q.created_at.getTime() !== question.created_at.getTime()
+      ),
+    });
   };
 
   return (
@@ -45,16 +44,27 @@ const Questions: FC = () => {
         ...(checkForSurveyChanges(currentSurvey?.survey?.id || null, currentChanges)
           ? [...currentChanges.collectedQuestions].reverse()
           : []),
-        ...(currentSurvey?.questions || []),
       ].map((question, i) => (
         <li
           key={new Date(question.created_at).getTime() + i}
           className="grid grid-cols-[auto,_min-content] gap-2"
         >
           <div>
-            {question.questionText}{" "}
-            {question.id == 0 && <span className="text-sm font-semibold uppercase">new</span>}
+            {question.questionText} <span className="text-sm font-semibold uppercase">new</span>
           </div>
+          <div className="flex flex-col justify-end pb-[10px]">
+            <Button variant={"secondary"} onClick={() => handleDeleteNewQuestion(question)}>
+              Del
+            </Button>
+          </div>
+        </li>
+      ))}
+      {[...(currentSurvey?.questions || [])].map((question, i) => (
+        <li
+          key={new Date(question.created_at).getTime() + i}
+          className="grid grid-cols-[auto,_min-content] gap-2"
+        >
+          <div>{question.questionText}</div>
           <div className="flex flex-col justify-end pb-[10px]">
             <Button variant={"secondary"} onClick={() => handleDeleteQuestion(question)}>
               Del

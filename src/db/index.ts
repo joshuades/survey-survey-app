@@ -1,8 +1,9 @@
 // import "@/lib/config";
 import { auth } from "@/lib/auth";
 import { CollectedDelete, CollectedQuestion } from "@/store/surveys";
-import { sql } from "@vercel/postgres";
-import { and, desc, eq, inArray } from "drizzle-orm";
+import { sql as vercelSql } from "@vercel/postgres";
+import { and, desc, eq, inArray, sql } from "drizzle-orm";
+
 import { drizzle } from "drizzle-orm/vercel-postgres";
 import {
   answer as answerTable,
@@ -11,13 +12,15 @@ import {
   users,
 } from "./schema";
 
-export const db = drizzle(sql);
+export const db = drizzle(vercelSql);
 
 // TYPES
 
 export type Survey = {
   id: number;
   name: string;
+  questionsCount: number;
+  answersCount: number;
   userId: string;
   updated_at: Date | null;
   created_at: Date;
@@ -35,12 +38,14 @@ export type FullSurvey = {
 };
 
 export interface Question extends CollectedQuestion {
-  surveyId: number;
-  deleted_at: Date | null;
+  id: number;
   // questionText: string;
   // answerType: string;
+  // status: string;
   // updated_at: Date | null;
   // created_at: Date;
+  surveyId: number;
+  deleted_at: Date | null;
 }
 
 export type Answer = {
@@ -239,23 +244,6 @@ export async function getQuestionsForSurvey(surveyId: number) {
   return { questions, message: "success" };
 }
 
-export async function createQuestion(collectedQuestion: CollectedQuestion, surveyId: number) {
-  const session = await auth();
-  if (!session?.user) return { question: null, message: "unauthenticated" };
-
-  if (!(await isAuthorized(surveyId, session?.user))) {
-    return { question: null, message: "unauthorized" };
-  }
-
-  const question = await db
-    .insert(questionTable)
-    .values({ ...collectedQuestion, surveyId })
-    .returning();
-  if (!question || question.length == 0) return { question, message: "internal error" };
-
-  return { question, message: "success" };
-}
-
 export async function createQuestions(
   collectedQuestions: CollectedQuestion[],
   surveyId: number,
@@ -272,9 +260,11 @@ export async function createQuestions(
   const questions = await db
     .insert(questionTable)
     .values(
-      collectedQuestions.map(({ questionText, answerType, created_at, updated_at }) => ({
+      collectedQuestions.map(({ questionText, answerType, index, created_at, updated_at }) => ({
         questionText,
         answerType,
+        index,
+        status: "active",
         created_at: new Date(created_at),
         updated_at: updated_at ? new Date(updated_at) : null,
         surveyId,
@@ -285,6 +275,18 @@ export async function createQuestions(
   if (!questions || questions.length == 0) {
     return { questions, message: "internal error" };
   }
+
+  // update questionsCount count on the survey
+  const survey = await db
+    .update(surveyTable)
+    .set({ questionsCount: sql`"survey"."questionsCount" + ${questions.length}` })
+    .where(eq(surveyTable.id, surveyId))
+    .returning();
+
+  if (!survey || survey.length == 0) {
+    return { survey, message: "internal error" };
+  }
+
   return { questions, message: "success" };
 }
 
@@ -333,6 +335,18 @@ export async function deleteQuestions(collectedDeletes: CollectedDelete[], surve
     .returning();
 
   if (!result || result.length == 0) return { message: "not found" };
+
+  // update questionsCount count on the survey
+  const survey = await db
+    .update(surveyTable)
+    .set({ questionsCount: sql`"survey"."questionsCount" - ${result.length}` })
+    .where(eq(surveyTable.id, surveyId))
+    .returning();
+
+  if (!survey || survey.length == 0) {
+    return { message: "internal error" };
+  }
+
   return { message: "success" };
 }
 

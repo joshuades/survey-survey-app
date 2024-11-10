@@ -25,12 +25,12 @@ const SurveySubmitButton: FunctionComponent = () => {
 
     if (!response.ok) {
       console.error("ERROR, check api response: ", response);
+      setErrorMessage(`${response.statusText}`);
       setIsLoading(false);
       return;
-    }
+    } else {
+      const data = await response.json();
 
-    const data = await response.json();
-    if (response.ok) {
       const survey = data.survey.survey;
       addSurvey(survey);
       router.push(`/builder/${survey.id}`, { scroll: true });
@@ -39,8 +39,6 @@ const SurveySubmitButton: FunctionComponent = () => {
         surveyId: survey.id || null,
         collectedQuestions: [],
       });
-    } else {
-      setErrorMessage(`${data.message}`);
     }
   };
 
@@ -56,20 +54,16 @@ const SurveySubmitButton: FunctionComponent = () => {
 
     if (!response.ok) {
       console.error("ERROR, check api response: ", response);
+      setErrorMessage(`${response.statusText}`);
       setIsLoading(false);
       return;
-    }
-
-    const data = await response.json();
-    if (response.ok) {
-      const newQuestions = data.questions;
-      if (currentSurvey)
-        setCurrentSurvey({
-          ...currentSurvey,
-          questions: [...currentSurvey.questions, ...newQuestions],
-        });
     } else {
-      setErrorMessage(`${data.message}`);
+      const data = await response.json();
+      const newQuestions = data.questions;
+      setCurrentSurvey({
+        survey: currentSurvey?.survey || null,
+        questions: [...(currentSurvey?.questions || []), ...newQuestions],
+      });
     }
   };
 
@@ -85,11 +79,9 @@ const SurveySubmitButton: FunctionComponent = () => {
 
     if (!response.ok) {
       console.error("ERROR, check api response: ", response);
+      setErrorMessage(`${response.statusText}`);
       setIsLoading(false);
       return;
-    } else {
-      const data = await response.json();
-      setErrorMessage(`${data.message}`);
     }
   };
 
@@ -114,7 +106,7 @@ const SurveySubmitButton: FunctionComponent = () => {
   };
 
   return (
-    <div className="flex gap-3">
+    <div className="flex flex-wrap gap-3">
       <Button
         onClick={() => handleSubmit()}
         disabled={
@@ -123,7 +115,9 @@ const SurveySubmitButton: FunctionComponent = () => {
       >
         {currentSurvey?.survey ? "SAVE CHANGES" : "SAVE NEW SURVEY"}
       </Button>
-      {errorMessage && <p className="color-custom-warning">{errorMessage}</p>}
+      {errorMessage && (
+        <p className="flex flex-col justify-end text-custom-warning">{errorMessage}</p>
+      )}
     </div>
   );
 };

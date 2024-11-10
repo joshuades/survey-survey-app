@@ -20,6 +20,9 @@ import { timestamps } from "./helpers";
 export const survey = pgTable("survey", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   name: varchar({ length: 255 }).notNull(),
+  questionsCount: integer("questionsCount").notNull().default(0),
+  answersCount: integer("answersCount").notNull().default(0),
+  status: varchar({ length: 50 }).notNull().default("active"), // inactive, active
   userId: text("userId")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
@@ -30,6 +33,8 @@ export const question = pgTable("question", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   questionText: varchar({ length: 255 }).notNull(),
   answerType: varchar({ length: 50 }).notNull().default("text"), // text, boolean
+  index: integer("index").notNull().default(999),
+  status: varchar({ length: 50 }).notNull().default("active"), // new, inactive, active
   surveyId: integer("surveyId")
     .notNull()
     .references(() => survey.id, { onDelete: "cascade" }),

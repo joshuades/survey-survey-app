@@ -16,9 +16,10 @@ export interface CurrentChanges {
 }
 
 export interface CollectedQuestion {
-  id: number; // 0 for new questions
   questionText: string;
   answerType: string;
+  index: number;
+  status: string;
   updated_at: Date | null;
   created_at: Date;
 }

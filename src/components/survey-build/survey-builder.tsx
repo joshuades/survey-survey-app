@@ -32,20 +32,27 @@ export default function SurveyBuilder({ survey }: { survey: SurveysWithQuestions
     setIsLoading(false);
   }, []);
 
+  const getNewIndex = (i: number = 0) => {
+    return currentSurvey?.survey
+      ? currentSurvey?.survey?.questionsCount + currentChanges.collectedQuestions.length + i + 1
+      : currentChanges.collectedQuestions.length + i + 1;
+  };
+
   const addQuestion = () => {
     if (!currentInput.trim()) {
       setInputMessage("Type something above to add a question!");
       return;
     }
-    const collectedQuestion = {
-      id: 0, // 0 for all new questions
-      questionText: currentInput,
-      answerType: "text",
-      created_at: new Date(),
-      updated_at: new Date(),
-    };
     const resetSuccessful = resetChanges(currentSurvey?.survey?.id || null);
     if (resetSuccessful) {
+      const collectedQuestion = {
+        questionText: currentInput,
+        answerType: "text",
+        index: getNewIndex(),
+        status: "new",
+        created_at: new Date(),
+        updated_at: new Date(),
+      };
       addCollectedQuestion(collectedQuestion);
       setCurrentInput("");
       setInputMessage("");
@@ -67,6 +74,7 @@ export default function SurveyBuilder({ survey }: { survey: SurveysWithQuestions
       const data = await response.json();
       if (data.questionTexts) {
         console.log("Generated questions:", data.questionTexts);
+
         const aiQuestions = data.questionTexts?.map((text: string, i: number) => {
           const d = new Date();
           d.setSeconds(d.getSeconds() + i);
@@ -74,11 +82,11 @@ export default function SurveyBuilder({ survey }: { survey: SurveysWithQuestions
             id: 0,
             questionText: text,
             answerType: "text",
+            index: getNewIndex(i),
             created_at: d,
             updated_at: null,
           };
         });
-
         setCurrentChanges({
           ...currentChanges,
           surveyId: survey?.survey?.id || null,
@@ -119,7 +127,7 @@ export default function SurveyBuilder({ survey }: { survey: SurveysWithQuestions
             onChange={(e) => setCurrentInput(e.target.value)}
             className="mx-auto h-[60px] max-w-[96vw] text-[36px] font-bold"
           />
-          {inputMessage ? <p className="text-custom-warning mx-2">{inputMessage}</p> : ""}
+          {inputMessage ? <p className="mx-2 text-custom-warning">{inputMessage}</p> : ""}
           <div className="mx-2 flex justify-between gap-3">
             <Button onClick={generateAIQuestions}>Generate</Button>
             <Button onClick={addQuestion}>Add Question</Button>
