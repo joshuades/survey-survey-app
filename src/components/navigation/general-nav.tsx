@@ -1,8 +1,8 @@
 import { auth } from "@/lib/auth";
 import Link from "next/link";
 import React from "react";
-import UserButton from "./auth/user-button";
-import { Button } from "./ui/button";
+import UserButton from "../auth/user-button";
+import { Button } from "../ui/button";
 
 const GeneralNav: React.FC = async () => {
   const session = await auth();

@@ -4,7 +4,7 @@ import { checkForSurveyChanges } from "@/lib/utils";
 import { useStore } from "@/store/surveys";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Button } from "./ui/button";
+import { Button } from "../ui/button";
 
 const SurveysNav: React.FC = () => {
   const { currentSurvey, selectedSurveyId, toggleSelectedSurveyId, removeSurvey, currentChanges } =

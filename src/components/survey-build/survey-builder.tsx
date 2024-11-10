@@ -6,10 +6,10 @@ import { SurveysWithQuestions } from "@/db";
 import { checkForSurveyChanges } from "@/lib/utils";
 import { useStore } from "@/store/surveys";
 import { useEffect, useState } from "react";
-import FadeInWrapper from "./fade-in-wrapper";
+import FadeInWrapper from "../fade-in-wrapper";
+import { Skeleton } from "../ui/skeleton";
 import Questions from "./questions";
 import SurveySubmitButton from "./survey-submit-button";
-import { Skeleton } from "./ui/skeleton";
 
 export default function SurveyBuilder({ survey }: { survey: SurveysWithQuestions }) {
   const [currentInput, setCurrentInput] = useState("");

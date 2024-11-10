@@ -4,7 +4,7 @@ import { checkForSurveyChanges, randomString } from "@/lib/utils";
 import { CollectedDelete, CollectedQuestion, useStore } from "@/store/surveys";
 import { useRouter } from "next/navigation";
 import { FunctionComponent, useState } from "react";
-import { Button } from "./ui/button";
+import { Button } from "../ui/button";
 
 const SurveySubmitButton: FunctionComponent = () => {
   const [errorMessage, setErrorMessage] = useState("");
@@ -104,19 +104,12 @@ const SurveySubmitButton: FunctionComponent = () => {
     }
     // if questions, add to db
     if (currentChanges.collectedQuestions?.length > 0) {
-      const return1 = await tryAddQuestionsToDb(currentChanges.collectedQuestions);
-      console.log("return1", return1);
+      tryAddQuestionsToDb(currentChanges.collectedQuestions);
     }
     if (currentChanges.collectedDeletes?.length > 0) {
-      const return2 = await tryDeleteQuestionsFromDb(currentChanges.collectedDeletes);
-      console.log("return2", return2);
+      tryDeleteQuestionsFromDb(currentChanges.collectedDeletes);
     }
-
-    console.log("currentChanges BEFORE reset", currentChanges);
-
     setCurrentChanges({ ...currentChanges, collectedQuestions: [], collectedDeletes: [] });
-    console.log("currentChanges AFTER reset", currentChanges);
-
     setIsLoading(false);
   };
 

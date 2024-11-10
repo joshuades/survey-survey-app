@@ -2,7 +2,7 @@ import { Question } from "@/db";
 import { checkForSurveyChanges } from "@/lib/utils";
 import { CollectedQuestion, useStore } from "@/store/surveys";
 import { FC } from "react";
-import { Button } from "./ui/button";
+import { Button } from "../ui/button";
 
 const Questions: FC = () => {
   const {

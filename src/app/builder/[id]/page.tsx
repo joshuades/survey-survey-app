@@ -1,10 +1,10 @@
-import GeneralNav from "@/components/general-nav";
 import MainHeadline from "@/components/main-headline";
-import MainNavBox from "@/components/main-nav-box";
-import SurveyBuilder from "@/components/survey-builder";
-import Surveys from "@/components/surveys";
-import SurveysNav from "@/components/surveys-nav";
-import SurveysWrapper from "@/components/surveys-wrapper";
+import GeneralNav from "@/components/navigation/general-nav";
+import MainNavBox from "@/components/navigation/main-nav-box";
+import Surveys from "@/components/navigation/surveys";
+import SurveysNav from "@/components/navigation/surveys-nav";
+import SurveysWrapper from "@/components/navigation/surveys-wrapper";
+import SurveyBuilder from "@/components/survey-build/survey-builder";
 import { getSurveyById } from "@/db";
 
 export default async function BuilderPage({ params }: { params: Promise<{ id: string }> }) {

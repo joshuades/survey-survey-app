@@ -3,7 +3,7 @@
 import { Survey } from "@/db";
 import { useStore } from "@/store/surveys";
 import { useEffect, useState } from "react";
-import { Skeleton } from "./ui/skeleton";
+import { Skeleton } from "../ui/skeleton";
 
 type SurveysProps = {
   surveys: Survey[];
