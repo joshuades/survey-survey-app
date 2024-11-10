@@ -18,8 +18,8 @@ export default async function BuilderPage({ params }: { params: Promise<{ id: st
   const survey = surveyWithQuestions.survey;
 
   return (
-    <div className="flex min-h-screen flex-col items-center font-[family-name:var(--font-geist-sans)]">
-      <div className="flex w-full max-w-[600px] flex-col gap-11 py-10 xl:max-w-[800px]">
+    <div className="flex min-h-screen flex-col items-center font-[family-name:var(--font-supreme)]">
+      <div className="flex w-full max-w-[600px] flex-col gap-[90px] py-[90px] xl:max-w-[800px]">
         <MainHeadline>
           Survey <span className="uppercase">{survey.name}</span>
         </MainHeadline>

@@ -1,11 +1,10 @@
-import { CollectedQuestion, Survey, SurveysWithQuestions } from "@/db";
+import { Survey, SurveysWithQuestions } from "@/db";
 import { create } from "zustand";
 
 export interface SurveyState {
   currentSurvey: SurveysWithQuestions | null;
   currentChanges: CurrentChanges;
   newQuestion: string;
-  aiPrompt: string;
   allSurveys: Survey[];
   selectedSurveyId: number | null;
 }
@@ -13,14 +12,28 @@ export interface SurveyState {
 export interface CurrentChanges {
   surveyId: number | null;
   collectedQuestions: CollectedQuestion[];
+  collectedDeletes: CollectedDelete[];
+}
+
+export interface CollectedQuestion {
+  id: number; // 0 for new questions
+  questionText: string;
+  answerType: string;
+  updated_at: Date | null;
+  created_at: Date;
+}
+
+export interface CollectedDelete {
+  questionId: number;
 }
 
 export interface SurveyActions {
   setCurrentSurvey: (survey: SurveysWithQuestions) => void;
   setCurrentChanges: (currentChanges: CurrentChanges) => void;
-  addCollectedQuestion: (question: CollectedQuestion, surveyId: number | null) => void;
+  resetChanges: (currentSurveyId: number | null) => boolean;
+  addCollectedQuestion: (question: CollectedQuestion) => void;
+  addCollectedDelete: (collectedDelete: CollectedDelete) => void;
   setNewQuestion: (newQuestion: string) => void;
-  setAiPrompt: (aiPrompt: string) => void;
   setAllSurveys: (allSurveys: Survey[]) => void;
   addSurvey: (survey: Survey) => void;
   removeSurvey: (surveyId: number) => void;
@@ -29,25 +42,36 @@ export interface SurveyActions {
 
 export const useStore = create<SurveyState & SurveyActions>()((set) => ({
   currentSurvey: null,
-  currentChanges: { surveyId: null, collectedQuestions: [] },
+  currentChanges: { surveyId: null, collectedQuestions: [], collectedDeletes: [] },
   newQuestion: "",
-  aiPrompt: "",
   allSurveys: [],
   selectedSurveyId: null,
   setCurrentSurvey: (survey: SurveysWithQuestions) => set({ currentSurvey: survey }),
   setCurrentChanges: (currentChanges: CurrentChanges) => set({ currentChanges }),
-  addCollectedQuestion: (question: CollectedQuestion, newSurveyId: number | null) =>
+  resetChanges: (currentSurveyId: number | null) => {
+    set((state) => ({
+      currentChanges:
+        state.currentChanges.surveyId === currentSurveyId
+          ? { ...state.currentChanges }
+          : { surveyId: currentSurveyId, collectedQuestions: [], collectedDeletes: [] },
+    }));
+    return true;
+  },
+  addCollectedQuestion: (question: CollectedQuestion) =>
     set((state) => ({
       currentChanges: {
-        surveyId: newSurveyId,
-        collectedQuestions:
-          state.currentChanges.surveyId === newSurveyId
-            ? [...state.currentChanges.collectedQuestions, question]
-            : [question],
+        ...state.currentChanges,
+        collectedQuestions: [...state.currentChanges.collectedQuestions, question],
+      },
+    })),
+  addCollectedDelete: (collectedDelete: CollectedDelete) =>
+    set((state) => ({
+      currentChanges: {
+        ...state.currentChanges,
+        collectedDeletes: [...state.currentChanges.collectedDeletes, collectedDelete],
       },
     })),
   setNewQuestion: (newQuestion: string) => set({ newQuestion }),
-  setAiPrompt: (aiPrompt: string) => set({ aiPrompt }),
   setAllSurveys: (allSurveys: Survey[]) => set({ allSurveys }),
   addSurvey: (survey: Survey) => set((state) => ({ allSurveys: [...state.allSurveys, survey] })),
   removeSurvey: (surveyId: number) =>

@@ -7,7 +7,7 @@ interface MainHeadlineProps {
 const MainHeadline: React.FC<MainHeadlineProps> = ({ children }) => {
   return (
     <FadeInWrapper>
-      <h1 className="text-[calc(1rem_+_5vw)] font-extrabold">{children}</h1>
+      <h1 className="w-max text-[calc(2rem_+_5vw)] font-extrabold">{children}</h1>
     </FadeInWrapper>
   );
 };

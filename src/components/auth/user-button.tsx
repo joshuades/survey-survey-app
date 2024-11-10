@@ -15,14 +15,13 @@ export default async function UserButton() {
   if (!session?.user) return <SignIn />;
   return (
     <div className="flex items-center gap-2">
-      <span className="hidden text-sm sm:inline-flex">{session.user.email}</span>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="relative h-8 w-8 rounded-full">
             <Avatar className="h-8 w-8">
               <AvatarImage
                 src={
-                  // session.user.image ??
+                  session.user.image ??
                   // SEEDS: 19277, 17370, 31415
                   `https://api.dicebear.com/9.x/thumbs/svg?seed=${Math.floor(Math.random() * 100000) + 1}&randomizeIds=true`
                 }

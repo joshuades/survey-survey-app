@@ -8,8 +8,8 @@ import SurveysWrapper from "@/components/surveys-wrapper";
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen flex-col items-center font-[family-name:var(--font-geist-sans)]">
-      <div className="flex w-full max-w-[600px] flex-col gap-11 py-10 xl:max-w-[800px]">
+    <div className="flex min-h-screen flex-col items-center font-[family-name:var(--font-supreme)]">
+      <div className="flex w-full max-w-[600px] flex-col gap-[90px] py-[90px] xl:max-w-[800px]">
         <MainHeadline>SurveySurvey</MainHeadline>
 
         <SurveyBuilder survey={{ survey: null, questions: [] }} />
@@ -19,7 +19,7 @@ export default function Home() {
             <Surveys surveys={[]} />
           </SurveysWrapper>
 
-          <div className="grid justify-between gap-3 sm:grid-cols-2">
+          <div className="grid grid-cols-2 gap-3 sm:justify-between">
             <SurveysNav />
             <GeneralNav />
           </div>

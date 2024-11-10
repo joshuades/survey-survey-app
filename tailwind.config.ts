@@ -8,15 +8,7 @@ const config: Config = {
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
-    colors: {
-      "custom-black": "#313131",
-      "custom-black-hover": "#535252",
-      "custom-black-disabled": "#d6cdcd",
-      "custom-grey-bg": "#F7F7F7",
-      "custom-grey-bg-skeleton": "#edebeb",
-      "custom-orange": "#e6932f",
-      "custom-orange-light": "#FDCA8D",
-    },
+    colors: {},
     screens: {
       sm: "480px",
       md: "768px",
@@ -25,6 +17,20 @@ const config: Config = {
     },
     extend: {
       colors: {
+        custom: {
+          black: {
+            DEFAULT: "#313131",
+            hover: "#535252",
+            disabled: "#d6cdcd",
+          },
+          secondaryBg: {
+            DEFAULT: "#F7F7F7",
+            skeleton: "#edebeb",
+          },
+          warning: {
+            DEFAULT: "#e6932f",
+          },
+        },
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         card: {

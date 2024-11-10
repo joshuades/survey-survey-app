@@ -39,10 +39,10 @@ const Surveys: React.FC<SurveysProps> = ({ surveys = [] }) => {
         ))
       ) : (
         <div className="flex flex-wrap content-start gap-x-[15px] gap-y-[10px]">
-          <Skeleton className="bg-custom-grey-bg-skeleton h-[22px] w-[110px]" />
-          <Skeleton className="bg-custom-grey-bg-skeleton h-[22px] w-[110px]" />
-          <Skeleton className="bg-custom-grey-bg-skeleton h-[22px] w-[110px]" />
-          <Skeleton className="bg-custom-grey-bg-skeleton h-[22px] w-[110px]" />
+          <Skeleton className="bg-custom-secondaryBg-skeleton h-[22px] w-[110px]" />
+          <Skeleton className="bg-custom-secondaryBg-skeleton h-[22px] w-[110px]" />
+          <Skeleton className="bg-custom-secondaryBg-skeleton h-[22px] w-[110px]" />
+          <Skeleton className="bg-custom-secondaryBg-skeleton h-[22px] w-[110px]" />
         </div>
       )}
     </ul>

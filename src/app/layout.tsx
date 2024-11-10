@@ -1,4 +1,3 @@
-import Header from "@/components/layout/header";
 import { auth } from "@/lib/auth";
 import type { Metadata } from "next";
 import { SessionProvider } from "next-auth/react";
@@ -7,6 +6,7 @@ import "./globals.css";
 
 const supreme = localFont({
   src: "./fonts/Supreme-Variable.ttf",
+  variable: "--font-supreme",
   weight: "100 800",
 });
 
@@ -36,7 +36,6 @@ export default async function RootLayout({
       <body className={`${supreme.className} text-custom-black text-[15px] antialiased`}>
         <SessionProvider basePath={"/auth"} session={session}>
           <div className="flex min-h-screen flex-col">
-            <Header />
             <main className="flex-grow">{children}</main>
           </div>
         </SessionProvider>

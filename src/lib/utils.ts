@@ -16,7 +16,7 @@ export const checkForSurveyChanges = (
   currentChanges: CurrentChanges
 ) => {
   return (
-    currentChanges.collectedQuestions?.length > 0 &&
-    currentSurvey?.survey?.id == currentChanges.surveyId
+    currentSurvey?.survey?.id == currentChanges.surveyId &&
+    (currentChanges.collectedQuestions?.length > 0 || currentChanges.collectedDeletes?.length > 0)
   );
 };

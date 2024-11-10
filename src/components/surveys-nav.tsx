@@ -70,7 +70,7 @@ const SurveysNav: React.FC = () => {
   };
 
   return (
-    <ul className="flex gap-[15px] text-lg font-semibold uppercase">
+    <ul className="flex flex-wrap gap-5 text-lg font-semibold uppercase md:flex-nowrap">
       {selectedSurveyId &&
         surveyNavOptions.map((option) => (
           <Button

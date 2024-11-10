@@ -1,7 +1,8 @@
 // import "@/lib/config";
 import { auth } from "@/lib/auth";
+import { CollectedDelete, CollectedQuestion } from "@/store/surveys";
 import { sql } from "@vercel/postgres";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, inArray } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/vercel-postgres";
 import {
   answer as answerTable,
@@ -33,20 +34,13 @@ export type FullSurvey = {
   questions: (Question & { answers: Answer[] })[];
 };
 
-export interface CollectedQuestion {
-  questionText: string;
-  answerType: string;
-  updated_at: Date | null;
-  created_at: Date;
-}
-
 export interface Question extends CollectedQuestion {
-  id: number;
   surveyId: number;
+  deleted_at: Date | null;
   // questionText: string;
+  // answerType: string;
   // updated_at: Date | null;
   // created_at: Date;
-  deleted_at: Date | null;
 }
 
 export type Answer = {
@@ -278,11 +272,12 @@ export async function createQuestions(
   const questions = await db
     .insert(questionTable)
     .values(
-      collectedQuestions.map(({ created_at, updated_at, ...rest }) => ({
-        ...rest,
-        surveyId,
+      collectedQuestions.map(({ questionText, answerType, created_at, updated_at }) => ({
+        questionText,
+        answerType,
         created_at: new Date(created_at),
         updated_at: updated_at ? new Date(updated_at) : null,
+        surveyId,
       }))
     )
     .returning();
@@ -322,6 +317,23 @@ export async function deleteQuestion(id: number, surveyId: number) {
   const question = await db.delete(questionTable).where(eq(questionTable.id, id)).returning();
   if (!question || question.length == 0) return { question, message: "not found" };
   return { question, message: "success" };
+}
+
+export async function deleteQuestions(collectedDeletes: CollectedDelete[], surveyId: number) {
+  const session = await auth();
+  if (!session?.user) return { message: "unauthenticated" };
+  if (!(await isAuthorized(surveyId, session?.user))) {
+    return { message: "unauthorized" };
+  }
+
+  const questionIds = collectedDeletes.map((d) => d.questionId);
+  const result = await db
+    .delete(questionTable)
+    .where(and(eq(questionTable.surveyId, surveyId), inArray(questionTable.id, questionIds)))
+    .returning();
+
+  if (!result || result.length == 0) return { message: "not found" };
+  return { message: "success" };
 }
 
 export async function getQuestionById(id: number, surveyId: number) {
