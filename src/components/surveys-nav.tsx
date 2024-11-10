@@ -18,20 +18,10 @@ const SurveysNav: React.FC = () => {
     disabled?: boolean;
   };
 
-  const handleEdit = () => {
-    if (checkForSurveyChanges(currentSurvey, currentChanges)) {
-      if (confirm("Are you sure you don't want to save your changes?")) {
-        router.push(`/builder/${selectedSurveyId}`, { scroll: true });
-      }
-    } else {
-      router.push(`/builder/${selectedSurveyId}`, { scroll: true });
-    }
-  };
-
   const surveyNavOptions: SurveyNavOptionType[] = [
     {
       name: "edit",
-      onClick: () => handleEdit(),
+      onClick: () => confirmedRouteTo(`/builder/${selectedSurveyId}`),
       disabled: currentSurvey?.survey?.id === selectedSurveyId,
     },
     { name: "results", onClick: () => console.log("results"), disabled: false },
@@ -44,13 +34,11 @@ const SurveysNav: React.FC = () => {
 
   const handleDelete = async (id: number) => {
     setDisableNav(true);
-    // delete in db
     const response = await fetch(`/api/surveys/${id}`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
       },
-      // body: JSON.stringify({ id: id }),
     });
 
     if (!response.ok) {
@@ -66,6 +54,16 @@ const SurveysNav: React.FC = () => {
       setDisableNav(false);
     } else {
       console.error("Failed to delete survey:", data);
+    }
+  };
+
+  const confirmedRouteTo = (path: string) => {
+    if (checkForSurveyChanges(currentSurvey?.survey?.id || null, currentChanges)) {
+      if (confirm("Are you sure you don't want to save your changes?")) {
+        router.push(path, { scroll: true });
+      }
+    } else {
+      router.push(path, { scroll: true });
     }
   };
 

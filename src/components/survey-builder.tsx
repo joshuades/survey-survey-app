@@ -108,7 +108,7 @@ export default function SurveyBuilder({ survey }: { survey: SurveysWithQuestions
       <FadeInWrapper delay={0.2}>
         <div className="grid gap-[15px] align-baseline">
           <p className="mx-2">
-            {checkForSurveyChanges(currentSurvey, currentChanges) ||
+            {checkForSurveyChanges(currentSurvey?.survey?.id || null, currentChanges) ||
             currentSurvey?.survey?.id != null
               ? "What else do you want to ask about?"
               : "What is your survey about?"}
@@ -128,7 +128,7 @@ export default function SurveyBuilder({ survey }: { survey: SurveysWithQuestions
       </FadeInWrapper>
       {!isLoading ? (
         <>
-          {(checkForSurveyChanges(currentSurvey, currentChanges) ||
+          {(checkForSurveyChanges(currentSurvey?.survey?.id || null, currentChanges) ||
             (currentSurvey?.questions && currentSurvey.questions.length > 0)) && (
             <FadeInWrapper>
               <Questions />
@@ -145,7 +145,7 @@ export default function SurveyBuilder({ survey }: { survey: SurveysWithQuestions
 
       {!isLoading ? (
         <>
-          {checkForSurveyChanges(currentSurvey, currentChanges) && (
+          {checkForSurveyChanges(currentSurvey?.survey?.id || null, currentChanges) && (
             <div className="mx-2 flex justify-between gap-5">
               <SurveySubmitButton />
               <Button onClick={() => handleDeleteChanges()} variant={"secondary"}>

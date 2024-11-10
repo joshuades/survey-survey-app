@@ -42,7 +42,7 @@ const Questions: FC = () => {
   return (
     <ul className="mx-2 flex flex-col gap-[25px] text-[32px] font-light">
       {[
-        ...(checkForSurveyChanges(currentSurvey, currentChanges)
+        ...(checkForSurveyChanges(currentSurvey?.survey?.id || null, currentChanges)
           ? [...currentChanges.collectedQuestions].reverse()
           : []),
         ...(currentSurvey?.questions || []),

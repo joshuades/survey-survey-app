@@ -1,4 +1,3 @@
-import { SurveysWithQuestions } from "@/db";
 import { CurrentChanges } from "@/store/surveys";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -12,11 +11,11 @@ export const randomString = (length: number = 5) => {
 };
 
 export const checkForSurveyChanges = (
-  currentSurvey: SurveysWithQuestions | null,
+  currentSurveyId: number | null,
   currentChanges: CurrentChanges
 ) => {
   return (
-    currentSurvey?.survey?.id == currentChanges.surveyId &&
+    currentSurveyId == currentChanges.surveyId &&
     (currentChanges.collectedQuestions?.length > 0 || currentChanges.collectedDeletes?.length > 0)
   );
 };

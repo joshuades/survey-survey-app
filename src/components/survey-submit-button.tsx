@@ -124,7 +124,9 @@ const SurveySubmitButton: FunctionComponent = () => {
     <div className="flex gap-3">
       <Button
         onClick={() => handleSubmit()}
-        disabled={!checkForSurveyChanges(currentSurvey, currentChanges) || isLoading}
+        disabled={
+          !checkForSurveyChanges(currentSurvey?.survey?.id || null, currentChanges) || isLoading
+        }
       >
         {currentSurvey?.survey ? "SAVE CHANGES" : "SAVE NEW SURVEY"}
       </Button>
