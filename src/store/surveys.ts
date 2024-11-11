@@ -1,14 +1,6 @@
 import { Survey, SurveysWithQuestions } from "@/db";
 import { create } from "zustand";
 
-export interface SurveyState {
-  currentSurvey: SurveysWithQuestions | null;
-  currentChanges: CurrentChanges;
-  newQuestion: string;
-  allSurveys: Survey[];
-  selectedSurveyId: number | null;
-}
-
 export interface CurrentChanges {
   surveyId: number | null;
   collectedQuestions: CollectedQuestion[];
@@ -28,6 +20,25 @@ export interface CollectedDelete {
   questionId: number;
 }
 
+export interface CollectedAnswer {
+  type: string;
+  answerText?: string | null;
+  answerBoolean?: boolean | null;
+  username: string;
+  email?: string | null;
+  questionId: number;
+  created_at: Date;
+}
+
+export interface SurveyState {
+  currentSurvey: SurveysWithQuestions | null;
+  currentChanges: CurrentChanges;
+  newQuestion: string;
+  allSurveys: Survey[];
+  selectedSurveyId: number | null;
+  collectedAnswers: CollectedAnswer[];
+}
+
 export interface SurveyActions {
   setCurrentSurvey: (survey: SurveysWithQuestions) => void;
   setCurrentChanges: (currentChanges: CurrentChanges) => void;
@@ -39,6 +50,7 @@ export interface SurveyActions {
   addSurvey: (survey: Survey) => void;
   removeSurvey: (surveyId: number) => void;
   toggleSelectedSurveyId: (selectedSurveyId: number | null) => void;
+  setCollectedAnswers: (collectedAnswers: CollectedAnswer[]) => boolean;
 }
 
 export const useStore = create<SurveyState & SurveyActions>()((set) => ({
@@ -47,6 +59,7 @@ export const useStore = create<SurveyState & SurveyActions>()((set) => ({
   newQuestion: "",
   allSurveys: [],
   selectedSurveyId: null,
+  collectedAnswers: [],
   setCurrentSurvey: (survey: SurveysWithQuestions) => set({ currentSurvey: survey }),
   setCurrentChanges: (currentChanges: CurrentChanges) => set({ currentChanges }),
   resetChanges: (currentSurveyId: number | null) => {
@@ -79,4 +92,8 @@ export const useStore = create<SurveyState & SurveyActions>()((set) => ({
     set((state) => ({ allSurveys: state.allSurveys.filter((survey) => survey.id !== surveyId) })),
   toggleSelectedSurveyId: (surveyId: number | null) =>
     set((state) => ({ selectedSurveyId: state.selectedSurveyId === surveyId ? null : surveyId })),
+  setCollectedAnswers: (collectedAnswers: CollectedAnswer[]) => {
+    set({ collectedAnswers });
+    return true;
+  },
 }));

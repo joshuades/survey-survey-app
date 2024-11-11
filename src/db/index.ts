@@ -1,6 +1,6 @@
 // import "@/lib/config";
 import { auth } from "@/lib/auth";
-import { CollectedDelete, CollectedQuestion } from "@/store/surveys";
+import { CollectedAnswer, CollectedDelete, CollectedQuestion } from "@/store/surveys";
 import { sql as vercelSql } from "@vercel/postgres";
 import { and, desc, eq, inArray, sql } from "drizzle-orm";
 
@@ -48,18 +48,16 @@ export interface Question extends CollectedQuestion {
   deleted_at: Date | null;
 }
 
-export type Answer = {
+export interface Answer extends CollectedAnswer {
   id: number;
-  type: string;
-  answerText?: string | null;
-  answerBoolean?: boolean | null;
-  username: string;
-  email?: string | null;
-  questionId: number;
-  updated_at: Date | null;
-  created_at: Date;
-  deleted_at: Date | null;
-};
+  // type: string;
+  // answerText?: string | null;
+  // answerBoolean?: boolean | null;
+  // username: string;
+  // email?: string | null;
+  // questionId: number;
+  // created_at: Date;
+}
 
 // SURVEY FUNCTIONS
 
@@ -361,6 +359,44 @@ export async function getQuestionById(id: number, surveyId: number) {
   const question = await db.select().from(questionTable).where(eq(questionTable.id, id));
   if (!question || question.length == 0) return { question, message: "not found" };
   return { question, message: "success" };
+}
+
+// ANSWER FUNCTIONS
+
+export async function createAnswers(collectedAnswers: CollectedAnswer[], surveyId: number) {
+  // TODO: check if the user has a valid access key for the survey
+  const answers = await db
+    .insert(answerTable)
+    .values(
+      collectedAnswers.map(
+        ({ type, answerText, answerBoolean, username, email, questionId, created_at }) => ({
+          type,
+          answerText,
+          answerBoolean,
+          username,
+          email,
+          questionId,
+          created_at: new Date(created_at),
+        })
+      )
+    )
+    .returning();
+
+  if (!answers || answers.length == 0) {
+    return { answers: [], message: "internal error" };
+  }
+
+  const survey = await db
+    .update(surveyTable)
+    .set({ answersCount: sql`"survey"."answersCount" + 1` })
+    .where(eq(surveyTable.id, surveyId))
+    .returning();
+
+  if (!survey || survey.length == 0) {
+    return { survey, message: "internal error" };
+  }
+
+  return { answers, message: "success" };
 }
 
 // USER FUNCTIONS
