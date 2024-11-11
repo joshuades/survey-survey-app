@@ -14,6 +14,7 @@ import SurveySubmitButton from "./survey-submit-button";
 export default function SurveyBuilder({ survey }: { survey: SurveysWithQuestions }) {
   const [currentInput, setCurrentInput] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [aiLoading, setAiLoading] = useState(false);
   const [inputMessage, setInputMessage] = useState("");
 
   const {
@@ -64,7 +65,7 @@ export default function SurveyBuilder({ survey }: { survey: SurveysWithQuestions
       setInputMessage("Type something above to generate questions!");
       return;
     }
-
+    setAiLoading(true);
     try {
       const response = await fetch("/api/generate-questions", {
         method: "POST",
@@ -92,13 +93,13 @@ export default function SurveyBuilder({ survey }: { survey: SurveysWithQuestions
           surveyId: survey?.survey?.id || null,
           collectedQuestions: [...currentChanges.collectedQuestions, ...aiQuestions],
         });
-
         setCurrentInput("");
         setInputMessage("");
       }
     } catch (error) {
       console.error("Failed to generate questions:", error);
     }
+    setAiLoading(false);
   };
 
   const handleDeleteChanges = () => {
@@ -129,7 +130,9 @@ export default function SurveyBuilder({ survey }: { survey: SurveysWithQuestions
           />
           {inputMessage ? <p className="mx-2 text-custom-warning">{inputMessage}</p> : ""}
           <div className="mx-2 flex justify-between gap-3">
-            <Button onClick={generateAIQuestions}>Generate</Button>
+            <Button onClick={generateAIQuestions} disabled={aiLoading}>
+              Generate
+            </Button>
             <Button onClick={addQuestion}>Add Question</Button>
           </div>
         </div>

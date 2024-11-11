@@ -2,6 +2,7 @@
 
 import { checkForSurveyChanges, randomString } from "@/lib/utils";
 import { CollectedDelete, CollectedQuestion, useStore } from "@/store/surveys";
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { FunctionComponent, useState } from "react";
 import { Button } from "../ui/button";
@@ -10,6 +11,7 @@ const SurveySubmitButton: FunctionComponent = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const { data: session } = useSession();
 
   const { currentSurvey, setCurrentSurvey, addSurvey, currentChanges, setCurrentChanges } =
     useStore();
@@ -107,14 +109,19 @@ const SurveySubmitButton: FunctionComponent = () => {
 
   return (
     <div className="flex flex-wrap gap-3">
-      <Button
-        onClick={() => handleSubmit()}
-        disabled={
-          !checkForSurveyChanges(currentSurvey?.survey?.id || null, currentChanges) || isLoading
-        }
-      >
-        {currentSurvey?.survey ? "SAVE CHANGES" : "SAVE NEW SURVEY"}
-      </Button>
+      {!session?.user?.email ? (
+        <Button disabled>SAVE & SHARE</Button>
+      ) : (
+        <Button
+          onClick={() => handleSubmit()}
+          disabled={
+            !checkForSurveyChanges(currentSurvey?.survey?.id || null, currentChanges) || isLoading
+          }
+        >
+          {currentSurvey?.survey ? "SAVE CHANGES" : "SAVE NEW SURVEY"}
+        </Button>
+      )}
+      {!session?.user?.email && <div> (Sign in to save your survey)</div>}
       {errorMessage && (
         <p className="flex flex-col justify-end text-custom-warning">{errorMessage}</p>
       )}

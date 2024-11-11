@@ -47,12 +47,12 @@ const Questions: FC = () => {
       ].map((question, i) => (
         <li
           key={new Date(question.created_at).getTime() + i}
-          className="grid grid-cols-[auto,_min-content] gap-2"
+          className="grid md:grid-cols-[auto,_min-content] md:gap-2"
         >
           <div>
             {question.questionText} <span className="text-sm font-semibold uppercase">new</span>
           </div>
-          <div className="flex flex-col justify-end pb-[10px]">
+          <div className="flex justify-end pr-[10px] md:flex-col md:pb-[10px] md:pr-0">
             <Button variant={"secondary"} onClick={() => handleDeleteNewQuestion(question)}>
               Del
             </Button>

@@ -11,6 +11,7 @@ export function SignIn({
         "use server";
         await signIn(provider);
       }}
+      className="flex"
     >
       <Button {...props}>Sign In</Button>
     </form>
