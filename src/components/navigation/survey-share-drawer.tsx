@@ -9,7 +9,7 @@ import {
 import { useStore } from "@/store/surveys";
 import { AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
-import ButtonAnimated from "../button-animated";
+import { ButtonAnimated } from "../button-animated";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 
