@@ -13,7 +13,13 @@ import { ButtonAnimated } from "../button-animated";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 
-const SurveyShareDrawer = ({ buttonName }: { buttonName: string }) => {
+const SurveyShareDrawer = ({
+  buttonName,
+  disableNav,
+}: {
+  buttonName: string;
+  disableNav?: boolean;
+}) => {
   const [copiedAnimation, setCopiedAnimation] = useState(false);
 
   const { selectedSurveyId, allSurveys } = useStore();
@@ -33,7 +39,7 @@ const SurveyShareDrawer = ({ buttonName }: { buttonName: string }) => {
   return (
     <Drawer>
       <DrawerTrigger asChild>
-        <Button>{buttonName}</Button>
+        <Button disabled={disableNav}>{buttonName}</Button>
       </DrawerTrigger>
       <DrawerContent>
         <div className="mx-auto w-full max-w-[400px]">

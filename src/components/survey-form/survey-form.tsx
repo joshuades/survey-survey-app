@@ -13,11 +13,11 @@ import { Card, CardContent, CardHeader } from "../ui/card";
 export function SurveyForm({
   questionId,
   questions,
-  surveyId,
+  survey,
 }: {
   questionId: string;
   questions: Question[];
-  surveyId: string;
+  survey: { id: string; name: string };
 }) {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -55,11 +55,11 @@ export function SurveyForm({
     setCollectedAnswers([...filteredCollectedAnswers, collectedAnswer]);
 
     if (currentIndex < questionIds.length - 1) {
-      router.push(`/${surveyId}/q/${questionIds[currentIndex + 1]}`);
+      router.push(`/${survey.id}/q/${questionIds[currentIndex + 1]}`);
     } else {
       setIsLoading(true);
       const createSuccessful = await tryCreateAnswersInDb(
-        surveyId,
+        survey.id,
         [...filteredCollectedAnswers, collectedAnswer],
         collectedAnswerer
       );
@@ -68,7 +68,7 @@ export function SurveyForm({
         setIsLoading(false);
         return;
       }
-      router.push(`/${surveyId}/complete`);
+      router.push(`/${survey.id}/complete`);
       setIsLoading(false);
     }
   };
@@ -102,19 +102,21 @@ export function SurveyForm({
         <h2 className="mb-4 text-4xl font-extrabold">Question not found</h2>
         <p className="mb-[45px]">Something went wrong, please try again.</p>
         <Button asChild>
-          <Link href={`/${surveyId}`}>Start Over</Link>
+          <Link href={`/${survey.id}`}>Start Over</Link>
         </Button>
       </div>
     );
   }
 
   const collectedAnswer = collectedAnswers.find((a) => a.questionId === Number(questionId));
+
   return (
     <Card className="mx-2 py-2">
       <form onSubmit={handleSubmit} className="">
         <CardHeader className="pb-4 pt-9">
           <div className="text-lg font-bold">
-            Question {questionId} of Survey <span className="uppercase">{surveyId}</span>
+            Question {currentIndex} of Survey &apos;<span className="uppercase">{survey.name}</span>
+            &apos;
           </div>
         </CardHeader>
         <CardContent>
@@ -137,7 +139,7 @@ export function SurveyForm({
             {currentIndex > 1 && (
               <Button
                 type="button"
-                onClick={() => router.push(`/${surveyId}/q/${questionIds[currentIndex - 1]}`)}
+                onClick={() => router.push(`/${survey.id}/q/${questionIds[currentIndex - 1]}`)}
               >
                 Previous
               </Button>

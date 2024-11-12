@@ -9,7 +9,7 @@ export default async function AnswerQuestionPage({
   const surveyId = (await params).id;
   const questionId = (await params).qid;
 
-  const { survey: surveyWithQuestions } = await getSurveyById(Number(surveyId));
+  const { survey: surveyWithQuestions } = await getSurveyById(Number(surveyId), true);
 
   if (!surveyWithQuestions) {
     console.error("Survey not found:", surveyWithQuestions);
@@ -17,9 +17,10 @@ export default async function AnswerQuestionPage({
   }
   const questions = surveyWithQuestions.questions;
 
-  return (
-    <div className="">
-      <SurveyForm questionId={questionId} questions={questions} surveyId={surveyId} />
-    </div>
-  );
+  const minfiedSurvey = {
+    id: surveyId,
+    name: surveyWithQuestions.survey.name,
+  };
+
+  return <SurveyForm questionId={questionId} questions={questions} survey={minfiedSurvey} />;
 }

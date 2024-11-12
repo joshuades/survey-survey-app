@@ -21,7 +21,7 @@ export default async function SurveysWrapper({ children }: { children: ReactNode
             Sign in
           </Button>
         </form>{" "}
-        to see all surveys.
+        to see all of your surveys.
       </div>
     );
   }

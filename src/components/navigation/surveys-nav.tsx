@@ -22,18 +22,23 @@ const SurveysNav: React.FC = () => {
   const surveyNavOptions: SurveyNavOptionType[] = [
     {
       name: "edit",
-      onClick: () => confirmedRouteTo(`/builder/${selectedSurveyId}`),
+      onClick: () => handleEdit(`/builder/${selectedSurveyId}`),
       disabled: currentSurvey?.survey?.id === selectedSurveyId,
     },
     { name: "results", onClick: () => console.log("results"), disabled: false },
     { name: "share", onClick: () => console.log("share"), disabled: false },
     {
       name: "del",
+      disabled: false,
       onClick: (surveyId: number) => handleDelete(surveyId),
     },
   ];
 
   const handleDelete = async (id: number) => {
+    if (!confirm("Are you sure you want to delete the selected survey?")) {
+      console.log("cancel delete");
+    }
+
     setDisableNav(true);
     const response = await fetch(`/api/surveys/${id}`, {
       method: "DELETE",
@@ -58,7 +63,7 @@ const SurveysNav: React.FC = () => {
     }
   };
 
-  const confirmedRouteTo = (path: string) => {
+  const handleEdit = (path: string) => {
     if (checkForSurveyChanges(currentSurvey?.survey?.id || null, currentChanges)) {
       if (confirm("Are you sure you don't want to save your changes?")) {
         router.push(path, { scroll: true });
@@ -73,7 +78,11 @@ const SurveysNav: React.FC = () => {
       {selectedSurveyId &&
         surveyNavOptions.map((option) =>
           option.name === "share" ? (
-            <SurveyShareDrawer key={option.name} buttonName={"Share"} />
+            <SurveyShareDrawer
+              disableNav={disableNav || option.disabled}
+              key={option.name}
+              buttonName={"Share"}
+            />
           ) : (
             <Button
               key={option.name}
