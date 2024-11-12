@@ -5,6 +5,7 @@ import { useStore } from "@/store/surveys";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "../ui/button";
+import SurveyShareDrawer from "./survey-share-drawer";
 
 const SurveysNav: React.FC = () => {
   const { currentSurvey, selectedSurveyId, toggleSelectedSurveyId, removeSurvey, currentChanges } =
@@ -70,15 +71,19 @@ const SurveysNav: React.FC = () => {
   return (
     <ul className="flex flex-wrap gap-5 text-lg font-semibold uppercase md:flex-nowrap">
       {selectedSurveyId &&
-        surveyNavOptions.map((option) => (
-          <Button
-            key={option.name}
-            onClick={() => option.onClick(selectedSurveyId)}
-            disabled={disableNav || option.disabled}
-          >
-            {option.name}
-          </Button>
-        ))}
+        surveyNavOptions.map((option) =>
+          option.name === "share" ? (
+            <SurveyShareDrawer key={option.name} buttonName={"Share"} />
+          ) : (
+            <Button
+              key={option.name}
+              onClick={() => option.onClick(selectedSurveyId)}
+              disabled={disableNav || option.disabled}
+            >
+              {option.name}
+            </Button>
+          )
+        )}
     </ul>
   );
 };

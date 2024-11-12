@@ -16,7 +16,6 @@ const Surveys: React.FC<SurveysProps> = ({ surveys = [] }) => {
   const { selectedSurveyId, toggleSelectedSurveyId } = useStore();
 
   useEffect(() => {
-    toggleSelectedSurveyId(null);
     setAllSurveys(surveys);
     setIsLoading(false);
   }, []);

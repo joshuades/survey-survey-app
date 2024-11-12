@@ -31,7 +31,7 @@ export default async function BuilderPage({ params }: { params: Promise<{ id: st
             <Surveys surveys={[]} />
           </SurveysWrapper>
 
-          <div className="grid justify-between gap-3 sm:grid-cols-2">
+          <div className="grid grid-cols-1 justify-between gap-7 sm:grid-cols-2 md:gap-5">
             <SurveysNav />
             <GeneralNav />
           </div>

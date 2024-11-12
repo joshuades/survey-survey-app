@@ -24,12 +24,14 @@ export default function SurveyBuilder({ survey }: { survey: SurveysWithQuestions
     setCurrentChanges,
     setCurrentSurvey,
     resetChanges,
+    setSelectedSurveyId,
   } = useStore();
 
   useEffect(() => {
     if (survey) {
       setCurrentSurvey(survey);
     }
+    setSelectedSurveyId(survey?.survey?.id || null);
     setIsLoading(false);
   }, []);
 

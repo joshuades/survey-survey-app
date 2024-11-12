@@ -54,6 +54,7 @@ export interface SurveyActions {
   addSurvey: (survey: Survey) => void;
   removeSurvey: (surveyId: number) => void;
   toggleSelectedSurveyId: (selectedSurveyId: number | null) => void;
+  setSelectedSurveyId: (selectedSurveyId: number | null) => void;
   setCollectedAnswers: (collectedAnswers: CollectedAnswer[]) => boolean;
   setCollectedAnswerer: (collectedAnswerer: CollectedAnswerer) => void;
 }
@@ -98,6 +99,7 @@ export const useStore = create<SurveyState & SurveyActions>()((set) => ({
     set((state) => ({ allSurveys: state.allSurveys.filter((survey) => survey.id !== surveyId) })),
   toggleSelectedSurveyId: (surveyId: number | null) =>
     set((state) => ({ selectedSurveyId: state.selectedSurveyId === surveyId ? null : surveyId })),
+  setSelectedSurveyId: (selectedSurveyId: number | null) => set({ selectedSurveyId }),
   setCollectedAnswers: (collectedAnswers: CollectedAnswer[]) => {
     set({ collectedAnswers });
     return true;
