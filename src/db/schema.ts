@@ -46,12 +46,20 @@ export const answer = pgTable("answer", {
   type: varchar({ length: 50 }).notNull().default("text"), // text, boolean
   answerText: varchar({ length: 255 }),
   answerBoolean: boolean("answerBoolean"),
-  username: varchar({ length: 20 }).default("anonymous").notNull(),
-  email: varchar({ length: 50 }),
   questionId: integer("questionId")
     .notNull()
     .references(() => question.id, { onDelete: "cascade" }),
-  ...timestamps,
+  answererId: integer("answererId")
+    .notNull()
+    .references(() => answerer.id, { onDelete: "cascade" }),
+  created_at: timestamp().defaultNow().notNull(),
+});
+
+export const answerer = pgTable("answerer", {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  username: varchar({ length: 20 }).notNull().default("anonymous"),
+  email: varchar({ length: 50 }),
+  created_at: timestamp().defaultNow().notNull(),
 });
 
 export const users = pgTable("user", {

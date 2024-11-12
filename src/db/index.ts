@@ -1,11 +1,17 @@
 // import "@/lib/config";
 import { auth } from "@/lib/auth";
-import { CollectedAnswer, CollectedDelete, CollectedQuestion } from "@/store/surveys";
+import {
+  CollectedAnswer,
+  CollectedAnswerer,
+  CollectedDelete,
+  CollectedQuestion,
+} from "@/store/surveys";
 import { sql as vercelSql } from "@vercel/postgres";
 import { and, desc, eq, inArray, sql } from "drizzle-orm";
 
 import { drizzle } from "drizzle-orm/vercel-postgres";
 import {
+  answerer as answererTable,
   answer as answerTable,
   question as questionTable,
   survey as surveyTable,
@@ -53,10 +59,15 @@ export interface Answer extends CollectedAnswer {
   // type: string;
   // answerText?: string | null;
   // answerBoolean?: boolean | null;
-  // username: string;
-  // email?: string | null;
   // questionId: number;
   // created_at: Date;
+  answererId: number;
+}
+
+export interface Answerer extends CollectedAnswerer {
+  id: number;
+  // username: string;
+  // email?: string;
 }
 
 // SURVEY FUNCTIONS
@@ -363,22 +374,31 @@ export async function getQuestionById(id: number, surveyId: number) {
 
 // ANSWER FUNCTIONS
 
-export async function createAnswers(collectedAnswers: CollectedAnswer[], surveyId: number) {
+export async function createAnswers(
+  collectedAnswers: CollectedAnswer[],
+  surveyId: number,
+  collectedAnswerer: CollectedAnswerer
+) {
   // TODO: check if the user has a valid access key for the survey
+
+  const answerer = await db.insert(answererTable).values(collectedAnswerer).returning();
+
+  if (!answerer || answerer.length == 0) {
+    return { answers: [], message: "internal error" };
+  }
+  const answererId = answerer[0].id;
+
   const answers = await db
     .insert(answerTable)
     .values(
-      collectedAnswers.map(
-        ({ type, answerText, answerBoolean, username, email, questionId, created_at }) => ({
-          type,
-          answerText,
-          answerBoolean,
-          username,
-          email,
-          questionId,
-          created_at: new Date(created_at),
-        })
-      )
+      collectedAnswers.map(({ type, answerText, answerBoolean, questionId, created_at }) => ({
+        type,
+        answerText,
+        answerBoolean,
+        questionId,
+        answererId: answererId,
+        created_at: new Date(created_at),
+      }))
     )
     .returning();
 

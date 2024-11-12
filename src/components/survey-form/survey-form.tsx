@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Question } from "@/db";
-import { CollectedAnswer, useStore } from "@/store/surveys";
+import { CollectedAnswer, CollectedAnswerer, useStore } from "@/store/surveys";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -21,7 +21,7 @@ export function SurveyForm({
 }) {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const { collectedAnswers, setCollectedAnswers } = useStore();
+  const { collectedAnswers, setCollectedAnswers, collectedAnswerer } = useStore();
   const router = useRouter();
 
   const questionIds = [...questions.map((q) => q.id), 0];
@@ -42,10 +42,8 @@ export function SurveyForm({
     const collectedAnswer = {
       type: "text",
       answerText: formData.get("answer") as string,
-      username: "anonymous",
       questionId: Number(questionId),
       created_at: new Date(),
-      // email?: string | null;
       // answerBoolean?: boolean | null;
     };
 
@@ -60,10 +58,11 @@ export function SurveyForm({
       router.push(`/${surveyId}/q/${questionIds[currentIndex + 1]}`);
     } else {
       setIsLoading(true);
-      const createSuccessful = await tryCreateAnswersInDb(surveyId, [
-        ...filteredCollectedAnswers,
-        collectedAnswer,
-      ]);
+      const createSuccessful = await tryCreateAnswersInDb(
+        surveyId,
+        [...filteredCollectedAnswers, collectedAnswer],
+        collectedAnswerer
+      );
       if (!createSuccessful) {
         setErrorMessage("Failed to save answers, please try again.");
         setIsLoading(false);
@@ -74,13 +73,17 @@ export function SurveyForm({
     }
   };
 
-  const tryCreateAnswersInDb = async (surveyId: string, collectedAnswers: CollectedAnswer[]) => {
+  const tryCreateAnswersInDb = async (
+    surveyId: string,
+    collectedAnswers: CollectedAnswer[],
+    collectedAnswerer: CollectedAnswerer
+  ) => {
     const response = await fetch(`/api/surveys/${surveyId}/answers/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ collectedAnswers, userdata: {} }),
+      body: JSON.stringify({ collectedAnswers, collectedAnswerer }),
     });
 
     if (!response.ok) {

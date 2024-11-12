@@ -24,10 +24,13 @@ export interface CollectedAnswer {
   type: string;
   answerText?: string | null;
   answerBoolean?: boolean | null;
-  username: string;
-  email?: string | null;
   questionId: number;
   created_at: Date;
+}
+
+export interface CollectedAnswerer {
+  username: string;
+  email?: string;
 }
 
 export interface SurveyState {
@@ -37,6 +40,7 @@ export interface SurveyState {
   allSurveys: Survey[];
   selectedSurveyId: number | null;
   collectedAnswers: CollectedAnswer[];
+  collectedAnswerer: CollectedAnswerer;
 }
 
 export interface SurveyActions {
@@ -51,6 +55,7 @@ export interface SurveyActions {
   removeSurvey: (surveyId: number) => void;
   toggleSelectedSurveyId: (selectedSurveyId: number | null) => void;
   setCollectedAnswers: (collectedAnswers: CollectedAnswer[]) => boolean;
+  setCollectedAnswerer: (collectedAnswerer: CollectedAnswerer) => void;
 }
 
 export const useStore = create<SurveyState & SurveyActions>()((set) => ({
@@ -60,6 +65,7 @@ export const useStore = create<SurveyState & SurveyActions>()((set) => ({
   allSurveys: [],
   selectedSurveyId: null,
   collectedAnswers: [],
+  collectedAnswerer: { username: "anonymous" },
   setCurrentSurvey: (survey: SurveysWithQuestions) => set({ currentSurvey: survey }),
   setCurrentChanges: (currentChanges: CurrentChanges) => set({ currentChanges }),
   resetChanges: (currentSurveyId: number | null) => {
@@ -96,4 +102,5 @@ export const useStore = create<SurveyState & SurveyActions>()((set) => ({
     set({ collectedAnswers });
     return true;
   },
+  setCollectedAnswerer: (collectedAnswerer: CollectedAnswerer) => set({ collectedAnswerer }),
 }));
