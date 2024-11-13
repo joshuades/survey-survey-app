@@ -38,10 +38,14 @@ export type SurveysWithQuestions = {
   questions: Question[];
 };
 
-export type FullSurvey = {
+export interface FullSurvey {
   survey: Survey;
-  questions: (Question & { answers: Answer[] })[];
-};
+  questions: FullQuestion[];
+}
+
+export interface FullQuestion extends Question {
+  answers: (Answer & { answerer: Answerer })[];
+}
 
 export interface Question extends CollectedQuestion {
   id: number;
@@ -173,41 +177,41 @@ export async function getFullSurveyById(id: number) {
   const session = await auth();
   if (!session?.user?.id) return { survey: null, message: "unauthenticated" };
 
-  const simpleSurvey = await db.select().from(surveyTable).where(eq(surveyTable.id, id));
+  const survey = await db.select().from(surveyTable).where(eq(surveyTable.id, id));
 
-  if (simpleSurvey.length > 0 && simpleSurvey[0].userId !== session?.user?.id) {
-    return { message: "unauthorized" };
+  if (survey.length > 0 && survey[0].userId !== session?.user?.id) {
+    return { survey: null, message: "unauthorized" };
   }
-  if (!simpleSurvey || simpleSurvey.length == 0) return { simpleSurvey, message: "not found" };
+  if (!survey || survey.length == 0) return { survey: null, message: "not found" };
 
-  // join the question table with the answer table
+  // join the question table with the answer table after joining the answer table with the answerer table
   const questions = await db
     .select()
     .from(questionTable)
     .where(eq(questionTable.surveyId, id))
-    .leftJoin(answerTable, eq(questionTable.id, answerTable.questionId));
+    .leftJoin(answerTable, eq(questionTable.id, answerTable.questionId))
+    .leftJoin(answererTable, eq(answerTable.answererId, answererTable.id));
 
-  const surveyAggregated = questions.reduce<
-    Record<number, { survey: Survey; questions: (Question & { answers: Answer[] })[] }>
-  >((acc, row) => {
-    const survey = simpleSurvey[0];
+  // aggregate answers for each question
+  const fullQuestions = questions.reduce<FullQuestion[]>((acc, row) => {
     const question = row.question;
     const answer = row.answer;
-    if (!acc[survey.id]) {
-      acc[survey.id] = { survey, questions: [] };
-    }
-    const existingQuestion = acc[survey.id].questions.find((q) => q.id === question.id);
+    const answerer = row.answerer as Answerer;
+    if (!question) return acc;
+    const existingQuestion = acc.find((q) => q.id === question.id);
     if (existingQuestion) {
-      if (answer) {
-        existingQuestion.answers.push(answer);
+      if (answer && answerer) {
+        existingQuestion.answers.push({ ...answer, answerer });
       }
     } else {
-      acc[survey.id].questions.push({ ...question, answers: answer ? [answer] : [] });
+      acc.push({ ...question, answers: answer ? [{ ...answer, answerer }] : [] });
     }
     return acc;
-  }, {});
-
-  return { survey: surveyAggregated, message: "success" };
+  }, []);
+  return {
+    survey: { ...survey[0], questions: fullQuestions },
+    message: "success",
+  };
 }
 
 export async function updateSurvey(id: number, name: string) {

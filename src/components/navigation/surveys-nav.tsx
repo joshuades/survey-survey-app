@@ -22,10 +22,14 @@ const SurveysNav: React.FC = () => {
   const surveyNavOptions: SurveyNavOptionType[] = [
     {
       name: "edit",
-      onClick: () => handleEdit(`/builder/${selectedSurveyId}`),
-      disabled: currentSurvey?.survey?.id === selectedSurveyId,
+      onClick: () => confirmedRouteTo(`/builder/${selectedSurveyId}`),
+      disabled: false,
     },
-    { name: "results", onClick: () => console.log("results"), disabled: false },
+    {
+      name: "results",
+      onClick: () => confirmedRouteTo(`/results/${selectedSurveyId}`),
+      disabled: false,
+    },
     { name: "share", onClick: () => console.log("share"), disabled: false },
     {
       name: "del",
@@ -63,7 +67,7 @@ const SurveysNav: React.FC = () => {
     }
   };
 
-  const handleEdit = (path: string) => {
+  const confirmedRouteTo = (path: string) => {
     if (checkForSurveyChanges(currentSurvey?.survey?.id || null, currentChanges)) {
       if (confirm("Are you sure you don't want to save your changes?")) {
         router.push(path, { scroll: true });

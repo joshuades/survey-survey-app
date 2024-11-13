@@ -1,3 +1,5 @@
+"use client";
+
 import { Question } from "@/db";
 import { checkForSurveyChanges } from "@/lib/utils";
 import { CollectedQuestion, useStore } from "@/store/surveys";
