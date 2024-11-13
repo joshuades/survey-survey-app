@@ -68,6 +68,7 @@ const SurveysNav: React.FC = () => {
   };
 
   const confirmedRouteTo = (path: string) => {
+    setDisableNav(true);
     if (checkForSurveyChanges(currentSurvey?.survey?.id || null, currentChanges)) {
       if (confirm("Are you sure you don't want to save your changes?")) {
         router.push(path, { scroll: true });
@@ -75,6 +76,7 @@ const SurveysNav: React.FC = () => {
     } else {
       router.push(path, { scroll: true });
     }
+    setDisableNav(false);
   };
 
   return (

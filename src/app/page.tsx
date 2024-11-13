@@ -12,7 +12,7 @@ export default function Home() {
       <div className="flex w-full max-w-[600px] flex-col gap-[90px] py-[90px] xl:max-w-[800px]">
         <MainHeadline>SurveySurvey</MainHeadline>
 
-        <SurveyBuilder survey={{ survey: null, questions: [] }} />
+        <SurveyBuilder surveyAndQuestions={{ survey: null, questions: [] }} />
 
         <MainNavBox>
           <SurveysWrapper>

@@ -33,45 +33,32 @@ export type Survey = {
   deleted_at: Date | null;
 };
 
-export type SurveysWithQuestions = {
+export interface SurveyAndQuestions {
   survey: Survey | null;
   questions: Question[];
-};
+}
 
-export interface FullSurvey {
-  survey: Survey;
+export interface SurveyFull extends Survey {
   questions: FullQuestion[];
+}
+
+export interface Question extends CollectedQuestion {
+  id: number;
+  surveyId: number;
+  deleted_at: Date | null;
 }
 
 export interface FullQuestion extends Question {
   answers: (Answer & { answerer: Answerer })[];
 }
 
-export interface Question extends CollectedQuestion {
-  id: number;
-  // questionText: string;
-  // answerType: string;
-  // status: string;
-  // updated_at: Date | null;
-  // created_at: Date;
-  surveyId: number;
-  deleted_at: Date | null;
-}
-
 export interface Answer extends CollectedAnswer {
   id: number;
-  // type: string;
-  // answerText?: string | null;
-  // answerBoolean?: boolean | null;
-  // questionId: number;
-  // created_at: Date;
   answererId: number;
 }
 
 export interface Answerer extends CollectedAnswerer {
   id: number;
-  // username: string;
-  // email?: string;
 }
 
 // SURVEY FUNCTIONS
@@ -112,28 +99,6 @@ export async function getSurveys() {
     .where(eq(surveyTable.userId, session?.user?.id))
     .orderBy(desc(surveyTable.updated_at), desc(surveyTable.created_at));
 
-  // // join the survey table with the question table
-  // const surveys = await db
-  //   .select()
-  //   .from(surveyTable)
-  //   .where(eq(surveyTable.userId, session?.user?.id))
-  //   .leftJoin(questionTable, eq(surveyTable.id, questionTable.surveyId));
-
-  // // aggregate the questions for each survey
-  // const surveysWithQuestions = surveys.reduce<
-  //   Record<number, { survey: Survey; questions: Question[] }>
-  // >((acc, row) => {
-  //   const survey = row.survey;
-  //   const question = row.question;
-  //   if (!acc[survey.id]) {
-  //     acc[survey.id] = { survey, questions: [] };
-  //   }
-  //   if (question) {
-  //     acc[survey.id].questions.push(question);
-  //   }
-  //   return acc;
-  // }, {});
-
   return { surveys, message: "success" };
 }
 
@@ -158,19 +123,51 @@ export async function getSurveyById(id: number, alreadyAuthorized: boolean = fal
   }
   if (!survey || survey.length == 0) return { survey: null, message: "not found" };
 
-  // aggregate questions for each survey
-  const surveyAggregated = survey.reduce<{ survey: Survey; questions: Question[] }>(
-    (acc, row) => {
-      const question = row.question;
-      if (question) {
-        acc.questions.push(question);
-      }
-      return acc;
-    },
-    { survey: survey[0].survey, questions: [] }
-  );
+  const questions = survey.reduce<Question[]>((acc, row) => {
+    const question = row.question;
+    if (question) {
+      acc.push(question);
+    }
+    return acc;
+  }, []);
 
-  return { survey: surveyAggregated, message: "success" };
+  return { survey: { ...survey[0].survey, questions }, message: "success" };
+}
+
+export async function getSurvAndQuestById(id: number, alreadyAuthorized: boolean = false) {
+  if (!alreadyAuthorized) {
+    const session = await auth();
+    if (!session?.user?.id) return { survey: null, message: "unauthenticated" };
+  }
+
+  // join survey with the question table
+  const survey = await db
+    .select()
+    .from(surveyTable)
+    .where(eq(surveyTable.id, id))
+    .leftJoin(questionTable, eq(surveyTable.id, questionTable.surveyId));
+
+  if (!alreadyAuthorized) {
+    const session = await auth();
+    if (survey.length > 0 && survey[0].survey.userId !== session?.user?.id) {
+      return { message: "unauthorized" };
+    }
+  }
+  if (!survey || survey.length == 0) return { survey: null, message: "not found" };
+
+  const questions = survey.reduce<Question[]>((acc, row) => {
+    const question = row.question;
+    if (question) {
+      acc.push(question);
+    }
+    return acc;
+  }, []);
+
+  const surveyAndQuestions = {
+    survey: survey[0].survey,
+    questions,
+  };
+  return { surveyAndQuestions, message: "success" };
 }
 
 export async function getFullSurveyById(id: number) {
@@ -296,6 +293,13 @@ export async function createQuestions(
     .where(eq(surveyTable.id, surveyId))
     .returning();
 
+  // updated updated_at on the survey
+  await db
+    .update(surveyTable)
+    .set({ updated_at: new Date() })
+    .where(eq(surveyTable.id, surveyId))
+    .returning();
+
   if (!survey || survey.length == 0) {
     return { survey, message: "internal error" };
   }
@@ -318,6 +322,12 @@ export async function updateQuestion(id: number, questionText: string, surveyId:
     .returning();
   if (!question || question.length == 0) return { question, message: "not found" };
 
+  await db
+    .update(surveyTable)
+    .set({ updated_at: new Date() })
+    .where(eq(surveyTable.id, surveyId))
+    .returning();
+
   return { question, message: "success" };
 }
 
@@ -331,6 +341,13 @@ export async function deleteQuestion(id: number, surveyId: number) {
 
   const question = await db.delete(questionTable).where(eq(questionTable.id, id)).returning();
   if (!question || question.length == 0) return { question, message: "not found" };
+
+  await db
+    .update(surveyTable)
+    .set({ updated_at: new Date() })
+    .where(eq(surveyTable.id, surveyId))
+    .returning();
+
   return { question, message: "success" };
 }
 
@@ -359,6 +376,12 @@ export async function deleteQuestions(collectedDeletes: CollectedDelete[], surve
   if (!survey || survey.length == 0) {
     return { message: "internal error" };
   }
+
+  await db
+    .update(surveyTable)
+    .set({ updated_at: new Date() })
+    .where(eq(surveyTable.id, surveyId))
+    .returning();
 
   return { message: "success" };
 }

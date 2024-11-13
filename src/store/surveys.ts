@@ -1,4 +1,4 @@
-import { Survey, SurveysWithQuestions } from "@/db";
+import { Survey, SurveyAndQuestions } from "@/db";
 import { create } from "zustand";
 
 export interface CurrentChanges {
@@ -34,7 +34,7 @@ export interface CollectedAnswerer {
 }
 
 export interface SurveyState {
-  currentSurvey: SurveysWithQuestions | null;
+  currentSurvey: SurveyAndQuestions | null;
   currentChanges: CurrentChanges;
   newQuestion: string;
   allSurveys: Survey[];
@@ -44,7 +44,7 @@ export interface SurveyState {
 }
 
 export interface SurveyActions {
-  setCurrentSurvey: (survey: SurveysWithQuestions) => void;
+  setCurrentSurvey: (survey: SurveyAndQuestions) => void;
   setCurrentChanges: (currentChanges: CurrentChanges) => void;
   resetChanges: (currentSurveyId: number | null) => boolean;
   addCollectedQuestion: (question: CollectedQuestion) => void;
@@ -67,7 +67,7 @@ export const useStore = create<SurveyState & SurveyActions>()((set) => ({
   selectedSurveyId: null,
   collectedAnswers: [],
   collectedAnswerer: { username: "anonymous" },
-  setCurrentSurvey: (survey: SurveysWithQuestions) => set({ currentSurvey: survey }),
+  setCurrentSurvey: (survey: SurveyAndQuestions) => set({ currentSurvey: survey }),
   setCurrentChanges: (currentChanges: CurrentChanges) => set({ currentChanges }),
   resetChanges: (currentSurveyId: number | null) => {
     set((state) => ({

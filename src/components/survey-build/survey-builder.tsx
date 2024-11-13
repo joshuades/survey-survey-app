@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { SurveysWithQuestions } from "@/db";
+import { SurveyAndQuestions } from "@/db";
 import { checkForSurveyChanges } from "@/lib/utils";
 import { useStore } from "@/store/surveys";
 import { useEffect, useState } from "react";
@@ -11,7 +11,11 @@ import { Skeleton } from "../ui/skeleton";
 import Questions from "./questions";
 import SurveySubmitButton from "./survey-submit-button";
 
-export default function SurveyBuilder({ survey }: { survey: SurveysWithQuestions }) {
+export default function SurveyBuilder({
+  surveyAndQuestions,
+}: {
+  surveyAndQuestions: SurveyAndQuestions;
+}) {
   const [currentInput, setCurrentInput] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [aiLoading, setAiLoading] = useState(false);
@@ -28,10 +32,10 @@ export default function SurveyBuilder({ survey }: { survey: SurveysWithQuestions
   } = useStore();
 
   useEffect(() => {
-    if (survey) {
-      setCurrentSurvey(survey);
+    if (surveyAndQuestions) {
+      setCurrentSurvey(surveyAndQuestions);
     }
-    setSelectedSurveyId(survey?.survey?.id || null);
+    setSelectedSurveyId(surveyAndQuestions?.survey?.id || null);
     setIsLoading(false);
   }, []);
 
@@ -92,7 +96,7 @@ export default function SurveyBuilder({ survey }: { survey: SurveysWithQuestions
         });
         setCurrentChanges({
           ...currentChanges,
-          surveyId: survey?.survey?.id || null,
+          surveyId: surveyAndQuestions?.survey?.id || null,
           collectedQuestions: [...currentChanges.collectedQuestions, ...aiQuestions],
         });
         setCurrentInput("");
@@ -108,7 +112,7 @@ export default function SurveyBuilder({ survey }: { survey: SurveysWithQuestions
     if (confirm("Are you sure you want to delete all survey changes?"))
       setCurrentChanges({
         ...currentChanges,
-        surveyId: survey?.survey?.id || null,
+        surveyId: surveyAndQuestions?.survey?.id || null,
         collectedQuestions: [],
         collectedDeletes: [],
       });

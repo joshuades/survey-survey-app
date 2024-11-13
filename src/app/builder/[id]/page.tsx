@@ -5,26 +5,24 @@ import Surveys from "@/components/navigation/surveys";
 import SurveysNav from "@/components/navigation/surveys-nav";
 import SurveysWrapper from "@/components/navigation/surveys-wrapper";
 import SurveyBuilder from "@/components/survey-build/survey-builder";
-import { getSurveyById } from "@/db";
+import { getSurvAndQuestById } from "@/db";
 
 export default async function BuilderPage({ params }: { params: Promise<{ id: string }> }) {
   const id = (await params).id;
-  const { survey: surveyWithQuestions } = await getSurveyById(Number(id));
+  const { surveyAndQuestions } = await getSurvAndQuestById(Number(id));
 
-  if (!surveyWithQuestions) {
-    console.error("Survey not found:", surveyWithQuestions);
+  if (!surveyAndQuestions) {
+    console.error("Survey not found:", surveyAndQuestions);
     return <div className="mx-auto mt-[20vh] w-fit text-3xl font-bold">Survey not found</div>;
   }
-  const survey = surveyWithQuestions.survey;
-
   return (
     <div className="flex min-h-screen flex-col items-center font-[family-name:var(--font-supreme)]">
       <div className="flex w-full max-w-[600px] flex-col gap-[90px] py-[90px] xl:max-w-[800px]">
         <MainHeadline>
-          Survey <span className="uppercase">{survey.name}</span>
+          Survey <span className="uppercase">{surveyAndQuestions.survey.name}</span>
         </MainHeadline>
 
-        <SurveyBuilder survey={surveyWithQuestions} />
+        <SurveyBuilder surveyAndQuestions={surveyAndQuestions} />
 
         <MainNavBox>
           <SurveysWrapper>

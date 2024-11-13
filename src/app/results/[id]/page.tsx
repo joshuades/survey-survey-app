@@ -3,6 +3,7 @@ import MainNavBox from "@/components/navigation/main-nav-box";
 import Surveys from "@/components/navigation/surveys";
 import SurveysNav from "@/components/navigation/surveys-nav";
 import SurveysWrapper from "@/components/navigation/surveys-wrapper";
+import ResultsHeader from "@/components/survey-results/results-header";
 import ResultsList from "@/components/survey-results/results-list";
 import { getFullSurveyById } from "@/db";
 
@@ -17,15 +18,14 @@ export default async function ResultsPage({ params }: { params: Promise<{ id: st
 
   return (
     <div className="flex min-h-screen flex-col items-center font-[family-name:var(--font-supreme)]">
-      <div className="flex w-full max-w-[600px] flex-col gap-[90px] py-[90px] xl:max-w-[800px]">
-        <div className="flex flex-col">
+      <div className="flex w-full max-w-[600px] flex-col py-[90px] xl:max-w-[800px]">
+        <div className="mb-[90px] flex flex-col gap-[45px]">
           <h1 className="w-max text-[calc(2rem_+_5vw)] font-extrabold">
             Survey <span className="uppercase">{survey.name}</span>
           </h1>
-          <h2 className="text-2xl font-bold">Results</h2>
+          <ResultsHeader survey={survey} />
+          <ResultsList questions={survey.questions} />
         </div>
-
-        <ResultsList questions={survey.questions} />
 
         <MainNavBox>
           <SurveysWrapper>
