@@ -453,6 +453,25 @@ export const getUsers = async () => {
   return selectResult;
 };
 
+export async function updateUser(username: string, thankYouMsg: string) {
+  const session = await auth();
+  if (!session?.user?.id) return { message: "unauthenticated" };
+
+  const updateResult = await db
+    .update(users)
+    .set({ name: username })
+    .where(eq(users.id, session?.user?.id))
+    .returning();
+
+  console.log("TODO: add Thank you message to the user", thankYouMsg);
+
+  if (!updateResult || updateResult.length == 0) {
+    return { message: "internal error" };
+  }
+
+  return { user: { name: updateResult[0].name }, message: "success" };
+}
+
 // HELPER FUNCTIONS
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

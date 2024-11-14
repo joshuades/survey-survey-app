@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 export const GET = auth(async (req) => {
   if (req.auth) {
-    const adminMail = "dimlight488@gmail.com";
+    const adminMail = process.env.ADMIN_EMAIL;
     if (req.auth?.user?.email !== adminMail) {
       return Response.json({ message: "Unauthorized" }, { status: 401 });
     }
@@ -14,4 +14,4 @@ export const GET = auth(async (req) => {
   }
 
   return Response.json({ message: "Not authenticated" }, { status: 401 });
-}) as any; // TODO: Fix `auth()` return type
+}) as any;

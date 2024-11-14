@@ -1,43 +1,27 @@
-"use client";
+import { SignIn } from "@/components/auth/auth-components";
+import ProfileForm from "@/components/profile-form";
+import { auth } from "@/lib/auth";
 
-import SessionData from "@/components/session-data";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { useSession } from "next-auth/react";
-import { useState } from "react";
+export default async function ProfilePage() {
+  const session = await auth();
 
-const UpdateForm = () => {
-  const { data: session, update } = useSession();
-  const [name, setName] = useState(`New ${session?.user?.name}`);
+  if (!session?.user) return <SignIn />;
 
-  if (!session?.user) return null;
+  const userData = {
+    name: session.user.name ?? "",
+    email: session.user.email ?? "",
+    image: session.user.image ?? "",
+    thankYouMsg: "Thank you for filling out my survey!",
+  };
+
   return (
-    <>
-      <h2 className="text-xl font-bold">Updating the session client-side</h2>
-      <div className="flex w-full max-w-sm items-center space-x-2">
-        <Input
-          type="text"
-          placeholder="New name"
-          value={name}
-          onChange={(e) => {
-            setName(e.target.value);
-          }}
-        />
-        <Button onClick={() => update({ user: { name } })} type="submit">
-          Update
-        </Button>
+    <div className="flex h-full min-h-screen flex-col items-center justify-center font-[family-name:var(--font-supreme)]">
+      <div className="w-full max-w-[300px] text-start">
+        <h2 className="mb-7 text-4xl font-extrabold">Profile Settings</h2>
+        {/* <p className="mb-[45px]">More options coming soon!</p> */}
+
+        <ProfileForm userData={userData} />
       </div>
-    </>
-  );
-};
-
-export default function ProfilePage() {
-  const { data: session, status } = useSession();
-
-  return (
-    <div className="mx-auto mt-4 flex max-w-screen-sm flex-col">
-      {status === "loading" ? <div>Loading...</div> : <SessionData session={session} />}
-      <UpdateForm />
     </div>
   );
 }
