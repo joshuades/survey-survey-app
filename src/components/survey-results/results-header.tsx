@@ -22,10 +22,10 @@ export default function ResultsHeader({ survey }: { survey: SurveyFull }) {
       </ul>
 
       <ul className="mx-2 flex gap-[15px]">
-        <li className="h-fit w-fit cursor-pointer rounded-xl border-[1px] border-custom-black bg-custom-black px-3 text-custom-secondaryBg">
+        <li className="h-fit w-fit rounded-xl border-[1px] border-custom-black bg-custom-black px-3 text-custom-secondaryBg">
           {survey.questions.length} questions
         </li>
-        <li className="h-fit w-fit cursor-pointer rounded-xl border-[1px] border-custom-black px-3">
+        <li className="h-fit w-fit rounded-xl border-[1px] border-custom-black px-3">
           {answererCount} people answered
         </li>
       </ul>

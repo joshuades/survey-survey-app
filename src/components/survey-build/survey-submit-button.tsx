@@ -33,7 +33,7 @@ const SurveySubmitButton: FunctionComponent = () => {
     } else {
       const data = await response.json();
 
-      const survey = data.survey.survey;
+      const survey = data.survey;
       addSurvey(survey);
       router.push(`/builder/${survey.id}`, { scroll: true });
       setCurrentChanges({

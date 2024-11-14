@@ -118,7 +118,7 @@ export async function getSurveyById(id: number, alreadyAuthorized: boolean = fal
   if (!alreadyAuthorized) {
     const session = await auth();
     if (survey.length > 0 && survey[0].survey.userId !== session?.user?.id) {
-      return { message: "unauthorized" };
+      return { survey: null, message: "unauthorized" };
     }
   }
   if (!survey || survey.length == 0) return { survey: null, message: "not found" };
