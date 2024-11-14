@@ -33,7 +33,6 @@ function ProfileForm({ userData }: { userData: UserData }) {
       state.result?.name != session?.user?.name
     ) {
       update({ user: { name: state.result?.name } });
-      console.log("session:", session);
     }
   }, [state.result]);
 
@@ -57,7 +56,7 @@ function ProfileForm({ userData }: { userData: UserData }) {
         )}
       </div>
       <div className="space-y-2">
-        <Label htmlFor="message">'Thank You' Message</Label>
+        <Label htmlFor="message">&apos;Thank You&apos; Message</Label>
         <Textarea
           value={thankYouInput}
           placeholder={userData.thankYouMsg}

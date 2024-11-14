@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SurveyAndQuestions } from "@/db";
 import { checkForSurveyChanges } from "@/lib/utils";
-import { useStore } from "@/store/surveys";
+import { useMyLocalStore, useStore } from "@/store/surveys";
+import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import FadeInWrapper from "../fade-in-wrapper";
 import { Skeleton } from "../ui/skeleton";
@@ -20,6 +21,8 @@ export default function SurveyBuilder({
   const [isLoading, setIsLoading] = useState(true);
   const [aiLoading, setAiLoading] = useState(false);
   const [inputMessage, setInputMessage] = useState("");
+  const { questionsLocal, addQuestionLocal, clearQuestionsLocal } = useMyLocalStore();
+  const { data: session } = useSession();
 
   const {
     currentSurvey,
@@ -38,6 +41,17 @@ export default function SurveyBuilder({
     setSelectedSurveyId(surveyAndQuestions?.survey?.id || null);
     setIsLoading(false);
   }, []);
+
+  useEffect(() => {
+    // If user logs in and there are questions in local storage, transfer them to the current changes
+    if (!currentSurvey?.survey && session?.user && questionsLocal.length > 0) {
+      setCurrentChanges({
+        ...currentChanges,
+        collectedQuestions: [...currentChanges.collectedQuestions, ...questionsLocal],
+      });
+      clearQuestionsLocal();
+    }
+  }, [isLoading]);
 
   const getNewIndex = (i: number = 0) => {
     return currentSurvey?.survey
@@ -61,6 +75,7 @@ export default function SurveyBuilder({
         updated_at: new Date(),
       };
       addCollectedQuestion(collectedQuestion);
+      if (!session?.user) addQuestionLocal(collectedQuestion);
       setCurrentInput("");
       setInputMessage("");
     }

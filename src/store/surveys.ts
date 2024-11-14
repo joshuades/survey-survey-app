@@ -1,5 +1,6 @@
 import { Survey, SurveyAndQuestions } from "@/db";
 import { create } from "zustand";
+import { createJSONStorage, persist } from "zustand/middleware";
 
 export interface CurrentChanges {
   surveyId: number | null;
@@ -106,3 +107,25 @@ export const useStore = create<SurveyState & SurveyActions>()((set) => ({
   },
   setCollectedAnswerer: (collectedAnswerer: CollectedAnswerer) => set({ collectedAnswerer }),
 }));
+
+interface MyLocalStore {
+  questionsLocal: CollectedQuestion[];
+  addQuestionLocal: (questionsLocal: CollectedQuestion) => void;
+  clearQuestionsLocal: () => void;
+}
+
+// Zustand store with persistence
+export const useMyLocalStore = create<MyLocalStore>()(
+  persist(
+    (set) => ({
+      questionsLocal: [],
+      addQuestionLocal: (question) =>
+        set((state) => ({ questionsLocal: [...state.questionsLocal, question] })),
+      clearQuestionsLocal: () => set({ questionsLocal: [] }),
+    }),
+    {
+      name: "survey-storage",
+      storage: createJSONStorage(() => localStorage),
+    }
+  )
+);
