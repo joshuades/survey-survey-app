@@ -1,3 +1,4 @@
+import ErrorBlock from "@/components/error-block";
 import { Button } from "@/components/ui/button";
 import { getSurveyById } from "@/db";
 import Link from "next/link";
@@ -8,15 +9,12 @@ export default async function AnswerSurveyPage({ params }: { params: Promise<{ i
   const { survey } = await getSurveyById(Number(id), true);
 
   if (!survey) {
-    console.error("Survey not found:", survey);
     return (
-      <div className="text-center">
-        <h2 className="mb-4 text-4xl font-extrabold">Survey Not Found</h2>
-        <p className="mb-[45px]">Could not find requested resource</p>
+      <ErrorBlock title="Survey not found" message="Could not find requested resource">
         <Button asChild>
           <Link href="/">Return Home</Link>
         </Button>
-      </div>
+      </ErrorBlock>
     );
   }
 

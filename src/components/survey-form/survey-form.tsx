@@ -8,6 +8,7 @@ import { CollectedAnswer, CollectedAnswerer, useStore } from "@/store/surveys";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import ErrorBlock from "../error-block";
 import { Card, CardContent, CardHeader } from "../ui/card";
 
 export function SurveyForm({
@@ -98,13 +99,11 @@ export function SurveyForm({
 
   if (!currentQuestion) {
     return (
-      <div className="text-center">
-        <h2 className="mb-4 text-4xl font-extrabold">Question not found</h2>
-        <p className="mb-[45px]">Something went wrong, please try again.</p>
+      <ErrorBlock title="Question not found" message="Something went wrong, please try again.">
         <Button asChild>
           <Link href={`/${survey.id}`}>Start Over</Link>
         </Button>
-      </div>
+      </ErrorBlock>
     );
   }
 
