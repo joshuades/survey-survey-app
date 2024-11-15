@@ -22,7 +22,7 @@
     - [drizzle "drizzle-with-vercel-edge-functions"](https://orm.drizzle.team/docs/tutorials/drizzle-with-vercel-edge-functions#vercel-postgres)
   - `npm install drizzle-orm pg @vercel/postgres`
   - `npm install -D drizzle-kit @types/pg`
-  - **IMPORTANT**: to use env variables in `drizzle.config.ts` you need to create and import the following "config.ts" file via `import "@/lib/config"`:
+  - **IMPORTANT**: to use env variables in `drizzle.config.ts` you need to create and the following code:
     ```ts
     import { loadEnvConfig } from "@next/env";
     const projectDir = process.cwd();

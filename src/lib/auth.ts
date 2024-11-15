@@ -1,7 +1,6 @@
 import NextAuth from "next-auth";
 import "next-auth/jwt";
 
-// import { db } from "@/db";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import Google from "next-auth/providers/google";
 
@@ -22,11 +21,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   basePath: "/auth",
   session: { strategy: "jwt" },
   callbacks: {
-    // authorized({ request, auth }) {
-    //   const { pathname } = request.nextUrl;
-    //   if (pathname === "/middleware-example") return !!auth;
-    //   return true;
-    // },
     session: async ({ session, token }) => {
       if (session?.user) {
         if (token.sub) {

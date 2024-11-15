@@ -1,6 +1,7 @@
 "use client";
 
 import { submitUserForm } from "@/db/actions";
+import { defaultThankYouMessage } from "@/lib/config";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -11,18 +12,18 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Textarea } from "./ui/textarea";
 
-interface UserData {
+interface ProfileData {
   name: string;
   email: string;
   image: string;
-  thankYouMsg: string;
+  thankYouMessage: string;
 }
 
-function ProfileForm({ userData }: { userData: UserData }) {
-  const [userNameInput, setUsernameInput] = useState(userData.name);
-  const [thankYouInput, setThankYouInput] = useState(userData.thankYouMsg);
+function ProfileForm({ profileData }: { profileData: ProfileData }) {
+  const [userNameInput, setUsernameInput] = useState(profileData.name);
+  const [thankYouInput, setThankYouInput] = useState(profileData.thankYouMessage);
 
-  const initialState = { message: "", errors: {}, result: { name: "" } };
+  const initialState = { message: "", errors: {}, result: { name: "", thankYouMessage: "" } };
   const [state, dispatch] = useFormState(submitUserForm, initialState);
   const { data: session, update } = useSession();
 
@@ -46,7 +47,7 @@ function ProfileForm({ userData }: { userData: UserData }) {
           required
           aria-describedby="username-error"
           value={userNameInput}
-          placeholder={userData.name}
+          placeholder={profileData.name}
           onChange={(e) => setUsernameInput(e.target.value)}
         />
         {state.errors?.username && (
@@ -59,7 +60,7 @@ function ProfileForm({ userData }: { userData: UserData }) {
         <Label htmlFor="message">&apos;Thank You&apos; Message</Label>
         <Textarea
           value={thankYouInput}
-          placeholder={userData.thankYouMsg}
+          placeholder={defaultThankYouMessage}
           onChange={(e) => setThankYouInput(e.target.value)}
           id="message"
           name="message"
@@ -77,9 +78,8 @@ function ProfileForm({ userData }: { userData: UserData }) {
           <Button asChild>
             <Link href="/">Go Back</Link>
           </Button>
-          {(userNameInput !== session?.user?.name || thankYouInput !== userData.thankYouMsg) && (
-            <Button type="submit">Update</Button>
-          )}
+          {(userNameInput !== session?.user?.name ||
+            thankYouInput !== profileData.thankYouMessage) && <Button type="submit">Update</Button>}
         </div>
         {state.message && (
           <Alert variant={state.errors ? "warning" : "text"} className="absolute w-fit">

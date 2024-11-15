@@ -1,4 +1,3 @@
-// import "@/lib/config";
 import { auth } from "@/lib/auth";
 import {
   CollectedAnswer,
@@ -15,7 +14,7 @@ import {
   answer as answerTable,
   question as questionTable,
   survey as surveyTable,
-  users,
+  users as userTable,
 } from "./schema";
 
 export const db = drizzle(vercelSql);
@@ -108,12 +107,13 @@ export async function getSurveyById(id: number, alreadyAuthorized: boolean = fal
     if (!session?.user?.id) return { survey: null, message: "unauthenticated" };
   }
 
-  // join survey with the question table
+  // join survey with the question table and with the user table
   const survey = await db
     .select()
     .from(surveyTable)
     .where(eq(surveyTable.id, id))
-    .leftJoin(questionTable, eq(surveyTable.id, questionTable.surveyId));
+    .leftJoin(questionTable, eq(surveyTable.id, questionTable.surveyId))
+    .leftJoin(userTable, eq(surveyTable.userId, userTable.id));
 
   if (!alreadyAuthorized) {
     const session = await auth();
@@ -131,7 +131,12 @@ export async function getSurveyById(id: number, alreadyAuthorized: boolean = fal
     return acc;
   }, []);
 
-  return { survey: { ...survey[0].survey, questions }, message: "success" };
+  const creator = {
+    name: survey[0]?.user?.name,
+    thankYouMessage: survey[0]?.user?.thankYouMessage,
+  };
+
+  return { survey: { ...survey[0].survey, questions, creator }, message: "success" };
 }
 
 export async function getSurvAndQuestById(id: number, alreadyAuthorized: boolean = false) {
@@ -449,27 +454,36 @@ export async function createAnswers(
 // USER FUNCTIONS
 
 export const getUsers = async () => {
-  const selectResult = await db.select().from(users);
+  const selectResult = await db.select().from(userTable);
   return selectResult;
 };
 
-export async function updateUser(username: string, thankYouMsg: string) {
+export const getUserSettings = async () => {
+  const session = await auth();
+  if (!session?.user?.id) return { message: "unauthenticated" };
+
+  const user = await db.select().from(userTable).where(eq(userTable.id, session?.user?.id));
+  if (!user || user.length == 0) return { message: "not found" };
+
+  const settings = { thankYouMessage: user[0].thankYouMessage };
+  return { settings, message: "success" };
+};
+
+export async function updateUser(username: string, thankYouMessage: string) {
   const session = await auth();
   if (!session?.user?.id) return { message: "unauthenticated" };
 
   const updateResult = await db
-    .update(users)
-    .set({ name: username })
-    .where(eq(users.id, session?.user?.id))
+    .update(userTable)
+    .set({ name: username, thankYouMessage })
+    .where(eq(userTable.id, session?.user?.id))
     .returning();
-
-  console.log("TODO: add Thank you message to the user", thankYouMsg);
 
   if (!updateResult || updateResult.length == 0) {
     return { message: "internal error" };
   }
 
-  return { user: { name: updateResult[0].name }, message: "success" };
+  return { user: { name: updateResult[0].name, thankYouMessage }, message: "success" };
 }
 
 // HELPER FUNCTIONS

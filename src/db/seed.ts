@@ -1,4 +1,3 @@
-// import "@/lib/config";
 // import { eq } from 'drizzle-orm'
 // import { db } from ".";
 // import { huntersTable } from "./schema";

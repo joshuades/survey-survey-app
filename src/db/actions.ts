@@ -34,7 +34,7 @@ export async function submitUserForm(prevState: FormState, formData: FormData): 
     };
   }
   return {
-    result: result.user as { name: string },
+    result: result.user as { name: string; thankYouMessage: string },
     message: "Profile updated successfully!",
   };
 }
