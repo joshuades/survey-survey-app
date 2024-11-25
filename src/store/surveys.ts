@@ -110,6 +110,7 @@ export const useStore = create<SurveyState & SurveyActions>()((set) => ({
 
 interface MyLocalStore {
   questionsLocal: CollectedQuestion[];
+  setQuestionsLocal: (questionsLocal: CollectedQuestion[]) => void;
   addQuestionLocal: (questionsLocal: CollectedQuestion) => void;
   clearQuestionsLocal: () => void;
 }
@@ -119,6 +120,7 @@ export const useMyLocalStore = create<MyLocalStore>()(
   persist(
     (set) => ({
       questionsLocal: [],
+      setQuestionsLocal: (questionsLocal: CollectedQuestion[]) => set({ questionsLocal }),
       addQuestionLocal: (question) =>
         set((state) => ({ questionsLocal: [...state.questionsLocal, question] })),
       clearQuestionsLocal: () => set({ questionsLocal: [] }),

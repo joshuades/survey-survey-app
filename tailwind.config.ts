@@ -23,6 +23,10 @@ const config: Config = {
             hover: "#535252",
             disabled: "#d6cdcd",
           },
+          gray: {
+            DEFAULT: "#cccccd",
+            hover: "#adacac",
+          },
           secondaryBg: {
             DEFAULT: "#F7F7F7",
             skeleton: "#edebeb",

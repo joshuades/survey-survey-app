@@ -14,10 +14,12 @@ export async function POST(req: Request) {
       messages: [
         {
           role: "system",
-          content:
-            "You are a helpful assistant that generates survey questions. Each question should have no symbol in front, just the plain question.",
+          content: "You are a helpful assistant that generates survey questions.",
         },
-        { role: "user", content: `Generate 3 survey questions about: ${prompt}` },
+        {
+          role: "user",
+          content: `Generate 3 survey questions about: "${prompt}". Return those questionns not be a numbered list, just plain text with no symbols in front.`,
+        },
       ],
     });
 

@@ -35,7 +35,7 @@ const Questions: FC = () => {
       ...currentChanges,
       surveyId: currentSurvey?.survey?.id || null,
       collectedQuestions: currentChanges.collectedQuestions.filter(
-        (q) => q.created_at.getTime() !== question.created_at.getTime()
+        (q) => new Date(q.created_at).getTime() !== new Date(question.created_at).getTime()
       ),
     });
   };

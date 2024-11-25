@@ -21,7 +21,8 @@ export default function SurveyBuilder({
   const [isLoading, setIsLoading] = useState(true);
   const [aiLoading, setAiLoading] = useState(false);
   const [inputMessage, setInputMessage] = useState("");
-  const { questionsLocal, addQuestionLocal, clearQuestionsLocal } = useMyLocalStore();
+  const { questionsLocal, setQuestionsLocal, addQuestionLocal, clearQuestionsLocal } =
+    useMyLocalStore();
   const { data: session } = useSession();
 
   const {
@@ -52,6 +53,10 @@ export default function SurveyBuilder({
       clearQuestionsLocal();
     }
   }, [isLoading]);
+
+  useEffect(() => {
+    console.log("questionsLocal:", questionsLocal);
+  }, [questionsLocal]);
 
   const getNewIndex = (i: number = 0) => {
     return currentSurvey?.survey
@@ -114,6 +119,9 @@ export default function SurveyBuilder({
           surveyId: surveyAndQuestions?.survey?.id || null,
           collectedQuestions: [...currentChanges.collectedQuestions, ...aiQuestions],
         });
+        if (!session?.user) {
+          setQuestionsLocal([...questionsLocal, ...aiQuestions]);
+        }
         setCurrentInput("");
         setInputMessage("");
       }

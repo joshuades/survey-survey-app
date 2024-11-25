@@ -1,3 +1,4 @@
+import Footer from "@/components/navigation/footer";
 import GeneralNav from "@/components/navigation/general-nav";
 import MainNavBox from "@/components/navigation/main-nav-box";
 import Surveys from "@/components/navigation/surveys";
@@ -17,9 +18,9 @@ export default async function ResultsPage({ params }: { params: Promise<{ id: st
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center font-[family-name:var(--font-supreme)]">
-      <div className="flex w-full max-w-[600px] flex-col py-[90px] xl:max-w-[800px]">
-        <div className="mb-[90px] flex flex-col gap-[45px]">
+    <div className="grid min-h-screen grid-rows-[max-content] justify-center font-[family-name:var(--font-supreme)]">
+      <div className="flex w-full max-w-[600px] flex-col gap-[90px] pt-[90px] xl:max-w-[800px]">
+        <div className="flex flex-col gap-[45px]">
           <h1 className="w-max text-[calc(2rem_+_5vw)] font-extrabold">
             Survey <span className="uppercase">{survey.name}</span>
           </h1>
@@ -38,6 +39,7 @@ export default async function ResultsPage({ params }: { params: Promise<{ id: st
           </div>
         </MainNavBox>
       </div>
+      <Footer />
     </div>
   );
 }
