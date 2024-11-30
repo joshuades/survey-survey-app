@@ -1,6 +1,6 @@
 import React from "react";
 
-export default async function SurveySubLayout({
+export default async function SurveyFormLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
