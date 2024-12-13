@@ -11,7 +11,7 @@ export default async function BuilderPage({ params }: { params: Promise<{ id: st
 
   if (!surveyAndQuestions) {
     return (
-      <div className="flex h-full min-h-screen flex-col items-center justify-center font-[family-name:var(--font-supreme)]">
+      <div className="flex h-full min-h-screen flex-col items-center justify-center">
         <ErrorBlock title="Survey not found" message="Could not find requested resource">
           <Button asChild>
             <Link href="/">Return Home</Link>

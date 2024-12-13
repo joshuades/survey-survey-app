@@ -12,8 +12,8 @@ export default async function SurveyManagementLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="grid min-h-screen grid-rows-[max-content] justify-center font-[family-name:var(--font-supreme)]">
-      <div className="flex w-full max-w-[600px] flex-col gap-[90px] pt-[90px] xl:max-w-[800px]">
+    <div className="grid min-h-screen grid-rows-[max-content] justify-center">
+      <div className="flex w-[100vw] max-w-[600px] flex-col gap-[90px] pt-[90px] xl:w-[800px] xl:max-w-[800px]">
         {children}
 
         <MainNavBox>

@@ -16,6 +16,9 @@ const config: Config = {
       xl: "1440px",
     },
     extend: {
+      opacity: {
+        loading: "0.3",
+      },
       colors: {
         custom: {
           black: {

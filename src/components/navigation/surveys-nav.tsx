@@ -3,7 +3,6 @@
 import { checkForSurveyChanges } from "@/lib/utils";
 import { useStore } from "@/store/surveys";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { Button } from "../ui/button";
 import SurveyShareDrawer from "./survey-share-drawer";
 
@@ -11,7 +10,6 @@ const SurveysNav: React.FC = () => {
   const { currentSurvey, selectedSurveyId, toggleSelectedSurveyId, removeSurvey, currentChanges } =
     useStore();
   const router = useRouter();
-  const [disableNav, setDisableNav] = useState(false);
 
   type SurveyNavOptionType = {
     name: string;
@@ -43,7 +41,6 @@ const SurveysNav: React.FC = () => {
       console.log("cancel delete");
     }
 
-    setDisableNav(true);
     const response = await fetch(`/api/surveys/${id}`, {
       method: "DELETE",
       headers: {
@@ -61,14 +58,12 @@ const SurveysNav: React.FC = () => {
       // delete in state
       toggleSelectedSurveyId(id);
       removeSurvey(id); // same as data.survey[0].id
-      setDisableNav(false);
     } else {
       console.error("Failed to delete survey:", data);
     }
   };
 
   const confirmedRouteTo = (path: string) => {
-    setDisableNav(true);
     if (checkForSurveyChanges(currentSurvey?.survey?.id || null, currentChanges)) {
       if (confirm("Are you sure you don't want to save your changes?")) {
         router.push(path, { scroll: true });
@@ -76,7 +71,6 @@ const SurveysNav: React.FC = () => {
     } else {
       router.push(path, { scroll: true });
     }
-    setDisableNav(false);
   };
 
   return (
@@ -85,7 +79,7 @@ const SurveysNav: React.FC = () => {
         surveyNavOptions.map((option) =>
           option.name === "share" ? (
             <SurveyShareDrawer
-              disableNav={disableNav || option.disabled}
+              disableNav={option.disabled}
               key={option.name}
               buttonName={"Share"}
             />
@@ -93,7 +87,7 @@ const SurveysNav: React.FC = () => {
             <Button
               key={option.name}
               onClick={() => option.onClick(selectedSurveyId)}
-              disabled={disableNav || option.disabled}
+              disabled={option.disabled}
             >
               {option.name}
             </Button>

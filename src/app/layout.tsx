@@ -8,6 +8,9 @@ const supreme = localFont({
   src: "./fonts/Supreme-Variable.ttf",
   variable: "--font-supreme",
   weight: "100 800",
+  fallback: ["system-ui", "arial"],
+  display: "swap",
+  adjustFontFallback: false,
 });
 
 export const metadata: Metadata = {
