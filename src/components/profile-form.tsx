@@ -2,6 +2,7 @@
 
 import { submitUserForm } from "@/db/actions";
 import { defaultThankYouMessage } from "@/lib/config";
+import { useLoadingStore } from "@/store/loadingStore";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -26,6 +27,11 @@ function ProfileForm({ profileData }: { profileData: ProfileData }) {
   const initialState = { message: "", errors: {}, result: { name: "", thankYouMessage: "" } };
   const [state, dispatch] = useFormState(submitUserForm, initialState);
   const { data: session, update } = useSession();
+  const { setIsRouting } = useLoadingStore();
+
+  useEffect(() => {
+    setIsRouting(false);
+  }, []);
 
   useEffect(() => {
     if (

@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { SurveyAndQuestions } from "@/db";
 import { checkForSurveyChanges } from "@/lib/utils";
+import { useLoadingStore } from "@/store/loadingStore";
 import { useMyLocalStore, useStore } from "@/store/surveysStore";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
@@ -17,9 +18,10 @@ export default function SurveyBuilder({
 }: {
   surveyAndQuestions: SurveyAndQuestions;
 }) {
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingQuestions, setIsLoadingQuestions] = useState(true);
   const { questionsLocal, clearQuestionsLocal } = useMyLocalStore();
   const { data: session } = useSession();
+  const { setIsRouting } = useLoadingStore();
 
   const {
     currentSurvey,
@@ -34,7 +36,8 @@ export default function SurveyBuilder({
       setCurrentSurvey(surveyAndQuestions);
     }
     setSelectedSurveyId(surveyAndQuestions?.survey?.id || null);
-    setIsLoading(false);
+    setIsLoadingQuestions(false);
+    setIsRouting(false);
   }, []);
 
   useEffect(() => {
@@ -46,7 +49,7 @@ export default function SurveyBuilder({
       });
       clearQuestionsLocal();
     }
-  }, [isLoading]);
+  }, [isLoadingQuestions]);
 
   useEffect(() => {
     console.log("questionsLocal:", questionsLocal);
@@ -66,7 +69,7 @@ export default function SurveyBuilder({
     <div className="grid w-full gap-[60px]">
       <BuilderControlRow surveyAndQuestions={surveyAndQuestions} />
 
-      {!isLoading ? (
+      {!isLoadingQuestions ? (
         <>
           {(checkForSurveyChanges(currentSurvey?.survey?.id || null, currentChanges) ||
             (currentSurvey?.questions && currentSurvey.questions.length > 0)) && (
@@ -83,7 +86,7 @@ export default function SurveyBuilder({
         </div>
       )}
 
-      {!isLoading ? (
+      {!isLoadingQuestions ? (
         <>
           {checkForSurveyChanges(currentSurvey?.survey?.id || null, currentChanges) && (
             <div className="mx-2 flex justify-between gap-5">

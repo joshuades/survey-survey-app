@@ -1,6 +1,7 @@
 "use client";
 
 import { checkForSurveyChanges } from "@/lib/utils";
+import { useLoadingStore } from "@/store/loadingStore";
 import { useStore } from "@/store/surveysStore";
 import { useRouter } from "next/navigation";
 import { Button } from "../ui/button";
@@ -9,6 +10,7 @@ import SurveyShareDrawer from "./survey-share-drawer";
 const SurveysNav: React.FC = () => {
   const { currentSurvey, selectedSurveyId, toggleSelectedSurveyId, removeSurvey, currentChanges } =
     useStore();
+  const { setIsRouting } = useLoadingStore();
   const router = useRouter();
 
   type SurveyNavOptionType = {
@@ -20,7 +22,10 @@ const SurveysNav: React.FC = () => {
   const surveyNavOptions: SurveyNavOptionType[] = [
     {
       name: "edit",
-      onClick: () => confirmedRouteTo(`/builder/${selectedSurveyId}`),
+      onClick: () => {
+        setIsRouting(true);
+        confirmedRouteTo(`/builder/${selectedSurveyId}`);
+      },
       disabled: false,
     },
     {

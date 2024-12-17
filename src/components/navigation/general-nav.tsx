@@ -13,7 +13,7 @@ const GeneralNav: React.FC = async () => {
       </Button>
 
       {session?.user && (
-        <Button asChild>
+        <Button asChild activateIsRouting>
           <Link href="/profile">Profile</Link>
         </Button>
       )}
