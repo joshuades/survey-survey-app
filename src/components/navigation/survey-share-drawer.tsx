@@ -6,7 +6,7 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import { useStore } from "@/store/surveys";
+import { useStore } from "@/store/surveysStore";
 import { AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
 import { ButtonAnimated } from "../button-animated";

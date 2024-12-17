@@ -1,4 +1,4 @@
-import { CurrentChanges } from "@/store/surveys";
+import { CurrentChanges } from "@/store/surveysStore";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { Survey } from "@/db";
-import { useStore } from "@/store/surveys";
+import { useStore } from "@/store/surveysStore";
 import { useEffect, useState } from "react";
 import { Skeleton } from "../ui/skeleton";
 

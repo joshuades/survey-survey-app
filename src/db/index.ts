@@ -4,7 +4,7 @@ import {
   CollectedAnswerer,
   CollectedDelete,
   CollectedQuestion,
-} from "@/store/surveys";
+} from "@/store/surveysStore";
 import { sql as vercelSql } from "@vercel/postgres";
 import { and, desc, eq, inArray, sql } from "drizzle-orm";
 

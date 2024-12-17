@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { SurveyAndQuestions } from "@/db";
 import { checkForSurveyChanges } from "@/lib/utils";
-import { useMyLocalStore, useStore } from "@/store/surveys";
+import { useMyLocalStore, useStore } from "@/store/surveysStore";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import FadeInWrapper from "../fade-in-wrapper";

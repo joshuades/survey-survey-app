@@ -1,7 +1,7 @@
 "use client";
 
 import { checkForSurveyChanges, randomString } from "@/lib/utils";
-import { CollectedDelete, CollectedQuestion, useStore } from "@/store/surveys";
+import { CollectedDelete, CollectedQuestion, useStore } from "@/store/surveysStore";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { FunctionComponent, useState } from "react";

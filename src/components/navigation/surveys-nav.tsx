@@ -1,7 +1,7 @@
 "use client";
 
 import { checkForSurveyChanges } from "@/lib/utils";
-import { useStore } from "@/store/surveys";
+import { useStore } from "@/store/surveysStore";
 import { useRouter } from "next/navigation";
 import { Button } from "../ui/button";
 import SurveyShareDrawer from "./survey-share-drawer";

@@ -2,7 +2,7 @@
 
 import { Question } from "@/db";
 import { checkForSurveyChanges } from "@/lib/utils";
-import { CollectedQuestion, useStore } from "@/store/surveys";
+import { CollectedQuestion, useStore } from "@/store/surveysStore";
 import { FC } from "react";
 import { Button } from "../ui/button";
 

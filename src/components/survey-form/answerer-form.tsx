@@ -1,6 +1,6 @@
 "use client";
 
-import { useStore } from "@/store/surveys";
+import { useStore } from "@/store/surveysStore";
 import { useState } from "react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";

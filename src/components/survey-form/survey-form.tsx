@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Question } from "@/db";
-import { CollectedAnswer, CollectedAnswerer, useStore } from "@/store/surveys";
+import { CollectedAnswer, CollectedAnswerer, useStore } from "@/store/surveysStore";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
