@@ -2,6 +2,8 @@ import Link from "next/link";
 import FadeInWrapper from "../fade-in-wrapper";
 
 function Footer() {
+  let currentYear = new Date().getFullYear();
+
   return (
     <FadeInWrapper>
       <div className="mx-auto flex h-full min-h-fit w-full max-w-[98vw] justify-center pt-[140px]">
@@ -12,7 +14,7 @@ function Footer() {
               target="_blank"
               className="cursor-pointer hover:text-custom-gray-hover"
             >
-              &copy; 2024 jxlx. Work in progress
+              &copy; {currentYear} jxlx. Work in progress
             </Link>
           </span>
         </div>

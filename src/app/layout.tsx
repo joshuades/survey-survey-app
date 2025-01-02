@@ -15,7 +15,7 @@ const supreme = localFont({
 
 export const metadata: Metadata = {
   title: "SurveySurvey",
-  description: "SurveySurvey is your go-to survey platform",
+  description: "SurveySurvey is your go-to survey platform for all your special survey needs.",
 };
 
 export default async function RootLayout({
