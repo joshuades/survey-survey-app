@@ -3,7 +3,7 @@
 import { checkForSurveyChanges } from "@/lib/utils";
 import { useLoadingStore } from "@/store/loadingStore";
 import { useStore } from "@/store/surveysStore";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Button } from "../ui/button";
 import SurveyShareDrawer from "./survey-share-drawer";
 
@@ -12,11 +12,13 @@ const SurveysNav: React.FC = () => {
     useStore();
   const { setIsRouting } = useLoadingStore();
   const router = useRouter();
+  const pathname = usePathname();
 
   type SurveyNavOptionType = {
     name: string;
     onClick: (surveyId: number) => void;
     disabled?: boolean;
+    pathIncludes?: string;
   };
 
   const surveyNavOptions: SurveyNavOptionType[] = [
@@ -27,11 +29,13 @@ const SurveysNav: React.FC = () => {
         confirmedRouteTo(`/builder/${selectedSurveyId}`);
       },
       disabled: false,
+      pathIncludes: "builder",
     },
     {
       name: "results",
       onClick: () => confirmedRouteTo(`/results/${selectedSurveyId}`),
       disabled: false,
+      pathIncludes: "results",
     },
     { name: "share", onClick: () => console.log("share"), disabled: false },
     {
@@ -43,7 +47,7 @@ const SurveysNav: React.FC = () => {
 
   const handleDelete = async (id: number) => {
     if (!confirm("Are you sure you want to delete the selected survey?")) {
-      console.log("cancel delete");
+      return;
     }
 
     const response = await fetch(`/api/surveys/${id}`, {
@@ -78,6 +82,13 @@ const SurveysNav: React.FC = () => {
     }
   };
 
+  const isButtonSelected = (pathIncludes: string | undefined) => {
+    if (pathIncludes) {
+      return pathname.includes(pathIncludes + "/" + selectedSurveyId);
+    }
+    return false;
+  };
+
   return (
     <ul className="flex flex-wrap gap-5 text-lg font-semibold uppercase md:flex-nowrap">
       {selectedSurveyId &&
@@ -93,7 +104,14 @@ const SurveysNav: React.FC = () => {
               key={option.name}
               onClick={() => option.onClick(selectedSurveyId)}
               disabled={option.disabled}
+              style={{
+                pointerEvents: isButtonSelected(option.pathIncludes) ? "none" : "initial",
+              }}
+              className="relative"
             >
+              {isButtonSelected(option.pathIncludes) && (
+                <span className="absolute bottom-[3px] left-1/2 h-[2px] w-[90%] -translate-x-1/2 rounded-[1px] bg-custom-black"></span>
+              )}
               {option.name}
             </Button>
           )

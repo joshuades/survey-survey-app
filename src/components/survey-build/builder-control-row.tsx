@@ -2,65 +2,87 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { SurveyAndQuestions } from "@/db";
+import { Question } from "@/db";
 import { checkForSurveyChanges } from "@/lib/utils";
 import { useMyLocalStore, useStore } from "@/store/surveysStore";
 import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import FadeInWrapper from "../fade-in-wrapper";
 
-export default function BuilderControlRow({
-  surveyAndQuestions,
-}: {
-  surveyAndQuestions: SurveyAndQuestions;
-}) {
+export default function BuilderControlRow() {
   const [currentInput, setCurrentInput] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
   const [inputMessage, setInputMessage] = useState("");
-  const { questionsLocal, setQuestionsLocal, addQuestionLocal } = useMyLocalStore();
+  const { questionsLocal, setQuestionsLocal } = useMyLocalStore();
   const { data: session } = useSession();
 
-  const { currentSurvey, currentChanges, addCollectedQuestion, setCurrentChanges, resetChanges } =
-    useStore();
-
-  useEffect(() => {
-    console.log("questionsLocal:", questionsLocal);
-  }, [questionsLocal]);
+  const { currentSurvey, setCurrentSurvey, currentChanges, setCurrentChanges } = useStore();
 
   const getNewIndex = (i: number = 0) => {
-    return currentSurvey?.survey
-      ? currentSurvey?.survey?.questionsCount + currentChanges.collectedQuestions.length + i + 1
-      : currentChanges.collectedQuestions.length + i + 1;
+    return currentSurvey?.questions ? currentSurvey?.questions?.length + i + 1 : i + 1;
   };
 
-  const addQuestion = () => {
+  const generateTmpId = (prefix: string) => {
+    return Number(prefix + Math.random().toString().slice(2));
+  };
+
+  const addQuestions = (questionTexts: string[]) => {
+    const newQuestions = questionTexts?.map((text: string, i: number) => {
+      const d = new Date();
+      d.setSeconds(d.getSeconds() + i);
+      return {
+        id: generateTmpId("9999"),
+        surveyId: generateTmpId("9999"),
+        questionText: text,
+        answerType: "text",
+        index: getNewIndex(i),
+        status: "new",
+        created_at: d,
+        updated_at: null,
+        deleted_at: null,
+      };
+    });
+
+    setCurrentSurvey({
+      ...currentSurvey,
+      survey: currentSurvey?.survey
+        ? {
+            ...currentSurvey?.survey,
+          }
+        : null,
+      questions: [...(currentSurvey?.questions || []), ...newQuestions],
+    });
+
+    setCurrentChanges({
+      ...currentChanges,
+      surveyId: currentSurvey?.survey?.id || null,
+      collectedQuestions: [
+        ...currentChanges.collectedQuestions,
+        ...newQuestions.map((q: Question) => ({ questionId: q.id })),
+      ],
+    });
+
+    // add questions to local storage
+    if (!session?.user) {
+      setQuestionsLocal([...questionsLocal, ...newQuestions]);
+      console.log("Added questions to local storage");
+    } else {
+      console.log("session.user exits:", session?.user);
+    }
+
+    setCurrentInput("");
+    setInputMessage("");
+  };
+
+  const handleAddQuestion = () => {
     if (!currentInput.trim()) {
       setInputMessage("Type something above to add a question!");
       return;
     }
-    const resetSuccessful = resetChanges(currentSurvey?.survey?.id || null);
-    if (resetSuccessful) {
-      const collectedQuestion = {
-        questionText: currentInput,
-        answerType: "text",
-        index: getNewIndex(),
-        status: "new",
-        created_at: new Date(),
-        updated_at: new Date(),
-      };
-      addCollectedQuestion(collectedQuestion);
-      if (!session?.user) {
-        addQuestionLocal(collectedQuestion);
-        console.log("Added question to local storage");
-      } else {
-        console.log("session.user exits:", session?.user);
-      }
-      setCurrentInput("");
-      setInputMessage("");
-    }
+    addQuestions([currentInput]);
   };
 
-  const generateAIQuestions = async () => {
+  const handleGenerateQuestions = async () => {
     if (!currentInput.trim()) {
       setInputMessage("Type something above to generate questions!");
       return;
@@ -73,34 +95,7 @@ export default function BuilderControlRow({
         body: JSON.stringify({ prompt: currentInput }),
       });
       const data = await response.json();
-      if (data.questionTexts) {
-        console.log("Generated questions:", data.questionTexts);
-
-        const aiQuestions = data.questionTexts?.map((text: string, i: number) => {
-          const d = new Date();
-          d.setSeconds(d.getSeconds() + i);
-          return {
-            id: 0,
-            questionText: text,
-            answerType: "text",
-            index: getNewIndex(i),
-            created_at: d,
-            updated_at: null,
-          };
-        });
-        setCurrentChanges({
-          ...currentChanges,
-          surveyId: surveyAndQuestions?.survey?.id || null,
-          collectedQuestions: [...currentChanges.collectedQuestions, ...aiQuestions],
-        });
-
-        if (!session?.user) {
-          setQuestionsLocal([...questionsLocal, ...aiQuestions]);
-        }
-
-        setCurrentInput("");
-        setInputMessage("");
-      }
+      if (data.questionTexts) addQuestions(data.questionTexts);
     } catch (error) {
       console.error("Failed to generate questions:", error);
     }
@@ -124,10 +119,10 @@ export default function BuilderControlRow({
         />
         {inputMessage ? <p className="mx-2 text-custom-warning">{inputMessage}</p> : ""}
         <div className="mx-2 flex justify-between gap-3">
-          <Button onClick={generateAIQuestions} disabled={aiLoading}>
+          <Button onClick={handleGenerateQuestions} disabled={aiLoading}>
             Generate
           </Button>
-          <Button onClick={addQuestion}>Add Question</Button>
+          <Button onClick={handleAddQuestion}>Add Question</Button>
         </div>
       </div>
     </FadeInWrapper>

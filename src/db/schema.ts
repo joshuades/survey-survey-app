@@ -10,17 +10,9 @@ import {
 import type { AdapterAccountType } from "next-auth/adapters";
 import { timestamps } from "./helpers";
 
-// export const huntersTable = pgTable("hunter", {
-//   id: integer().primaryKey().generatedAlwaysAsIdentity(),
-//   name: varchar({ length: 255 }).notNull(),
-//   email: varchar({ length: 255 }).notNull().unique(),
-//   ...timestamps,
-// });
-
 export const survey = pgTable("survey", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   name: varchar({ length: 255 }).notNull(),
-  questionsCount: integer("questionsCount").notNull().default(0),
   answersCount: integer("answersCount").notNull().default(0),
   status: varchar({ length: 50 }).notNull().default("active"), // inactive, active
   userId: text("userId")

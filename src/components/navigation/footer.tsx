@@ -2,7 +2,7 @@ import Link from "next/link";
 import FadeInWrapper from "../fade-in-wrapper";
 
 function Footer() {
-  let currentYear = new Date().getFullYear();
+  const currentYear = new Date().getFullYear();
 
   return (
     <FadeInWrapper>
@@ -10,7 +10,7 @@ function Footer() {
         <div className="flex w-full justify-center border-2 border-b-0 border-dashed border-custom-gray hover:border-custom-gray-hover">
           <span className="my-[40px] text-[13px] font-semibold uppercase text-custom-gray lg:my-[90px]">
             <Link
-              href={"https://jxlx.world"}
+              href={"https://jxlx-08.com/?utm_source=survsurv&utm_medium=footer&utm_id=4455"}
               target="_blank"
               className="cursor-pointer hover:text-custom-gray-hover"
             >

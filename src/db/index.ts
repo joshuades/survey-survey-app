@@ -1,10 +1,5 @@
 import { auth } from "@/lib/auth";
-import {
-  CollectedAnswer,
-  CollectedAnswerer,
-  CollectedDelete,
-  CollectedQuestion,
-} from "@/store/surveysStore";
+import { CollectedAnswer, CollectedAnswerer } from "@/store/surveysStore";
 import { sql as vercelSql } from "@vercel/postgres";
 import { and, desc, eq, inArray, sql } from "drizzle-orm";
 
@@ -24,7 +19,6 @@ export const db = drizzle(vercelSql);
 export type Survey = {
   id: number;
   name: string;
-  questionsCount: number;
   answersCount: number;
   userId: string;
   updated_at: Date | null;
@@ -41,10 +35,16 @@ export interface SurveyFull extends Survey {
   questions: FullQuestion[];
 }
 
-export interface Question extends CollectedQuestion {
+export interface Question {
   id: number;
-  surveyId: number;
+  questionText: string;
+  answerType: string;
+  index: number;
+  status: string;
+  created_at: Date;
+  updated_at: Date | null;
   deleted_at: Date | null;
+  surveyId: number;
 }
 
 export interface FullQuestion extends Question {
@@ -62,7 +62,7 @@ export interface Answerer extends CollectedAnswerer {
 
 // SURVEY FUNCTIONS
 
-export async function createSurvey(name: string, collectedQuestions: CollectedQuestion[]) {
+export async function createSurvey(name: string, questions: Question[]) {
   const session = await auth();
   if (!session?.user?.id) return { survey: null, message: "unauthenticated" };
 
@@ -72,8 +72,8 @@ export async function createSurvey(name: string, collectedQuestions: CollectedQu
     .returning();
   if (!survey || survey.length == 0) return { survey, message: "internal error" };
 
-  if (collectedQuestions.length > 0) {
-    const result = await createQuestions(collectedQuestions, survey[0].id, true);
+  if (questions.length > 0) {
+    const result = await createQuestions(questions, survey[0].id, true);
     if (result.message !== "success") {
       return { survey, message: result.message };
     }
@@ -260,7 +260,7 @@ export async function getQuestionsForSurvey(surveyId: number) {
 }
 
 export async function createQuestions(
-  collectedQuestions: CollectedQuestion[],
+  questions: Question[],
   surveyId: number,
   alreadyAuthorized: boolean = false
 ) {
@@ -272,10 +272,10 @@ export async function createQuestions(
     }
   }
 
-  const questions = await db
+  const createdQuestions = await db
     .insert(questionTable)
     .values(
-      collectedQuestions.map(({ questionText, answerType, index, created_at, updated_at }) => ({
+      questions.map(({ questionText, answerType, index, created_at, updated_at }) => ({
         questionText,
         answerType,
         index,
@@ -287,19 +287,12 @@ export async function createQuestions(
     )
     .returning();
 
-  if (!questions || questions.length == 0) {
-    return { questions, message: "internal error" };
+  if (!createdQuestions || createdQuestions.length == 0) {
+    return { questions: createdQuestions, message: "internal error" };
   }
 
-  // update questionsCount count on the survey
-  const survey = await db
-    .update(surveyTable)
-    .set({ questionsCount: sql`"survey"."questionsCount" + ${questions.length}` })
-    .where(eq(surveyTable.id, surveyId))
-    .returning();
-
   // updated updated_at on the survey
-  await db
+  const survey = await db
     .update(surveyTable)
     .set({ updated_at: new Date() })
     .where(eq(surveyTable.id, surveyId))
@@ -309,7 +302,7 @@ export async function createQuestions(
     return { survey, message: "internal error" };
   }
 
-  return { questions, message: "success" };
+  return { questions: createdQuestions, message: "success" };
 }
 
 export async function updateQuestion(id: number, questionText: string, surveyId: number) {
@@ -356,31 +349,20 @@ export async function deleteQuestion(id: number, surveyId: number) {
   return { question, message: "success" };
 }
 
-export async function deleteQuestions(collectedDeletes: CollectedDelete[], surveyId: number) {
+export async function deleteQuestions(collectedDeletes: Question[], surveyId: number) {
   const session = await auth();
   if (!session?.user) return { message: "unauthenticated" };
   if (!(await isAuthorized(surveyId, session?.user))) {
     return { message: "unauthorized" };
   }
 
-  const questionIds = collectedDeletes.map((d) => d.questionId);
-  const result = await db
+  const questionIds = collectedDeletes.map((d) => d.id);
+  const deletedQuestions = await db
     .delete(questionTable)
     .where(and(eq(questionTable.surveyId, surveyId), inArray(questionTable.id, questionIds)))
     .returning();
 
-  if (!result || result.length == 0) return { message: "not found" };
-
-  // update questionsCount count on the survey
-  const survey = await db
-    .update(surveyTable)
-    .set({ questionsCount: sql`"survey"."questionsCount" - ${result.length}` })
-    .where(eq(surveyTable.id, surveyId))
-    .returning();
-
-  if (!survey || survey.length == 0) {
-    return { message: "internal error" };
-  }
+  if (!deletedQuestions || deletedQuestions.length == 0) return { message: "not found" };
 
   await db
     .update(surveyTable)
@@ -388,7 +370,7 @@ export async function deleteQuestions(collectedDeletes: CollectedDelete[], surve
     .where(eq(surveyTable.id, surveyId))
     .returning();
 
-  return { message: "success" };
+  return { questions: deletedQuestions, message: "success" };
 }
 
 export async function getQuestionById(id: number, surveyId: number) {

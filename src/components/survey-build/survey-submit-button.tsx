@@ -1,10 +1,11 @@
 "use client";
 
+import { Question, Survey } from "@/db";
 import { checkForSurveyChanges, randomString } from "@/lib/utils";
-import { CollectedDelete, CollectedQuestion, useStore } from "@/store/surveysStore";
+import { CollectedQuestion, useStore } from "@/store/surveysStore";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { FunctionComponent, useState } from "react";
+import { FunctionComponent, useEffect, useState } from "react";
 import { Button } from "../ui/button";
 
 const SurveySubmitButton: FunctionComponent = () => {
@@ -13,16 +14,87 @@ const SurveySubmitButton: FunctionComponent = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { data: session } = useSession();
 
-  const { currentSurvey, setCurrentSurvey, addSurvey, currentChanges, setCurrentChanges } =
-    useStore();
+  const {
+    currentSurvey,
+    setCurrentSurvey,
+    allSurveys,
+    setAllSurveys,
+    currentChanges,
+    setCurrentChanges,
+  } = useStore();
 
-  const tryCreateSurveyInDb = async (name: string, collectedQuestions: CollectedQuestion[]) => {
+  useEffect(() => {
+    console.log("currentSurvey:", currentSurvey);
+  }, [currentSurvey]);
+
+  /**
+   * @description Updates currentSurvey questions with freshly added questions from db (e.g. updates id, status & surveyId by using comparing created_at) & clears collectedQuestions and collectedDeletes
+   * @param addedQuestions Questions from db response, when adding questions to db
+   * @param deletedQuestions Questions from db response, when deleting questions from db
+   */
+  const updateClientSideWithResults = (
+    addedQuestions: Question[],
+    deletedQuestions: Question[]
+  ) => {
+    const idsToClear: number[] = [];
+
+    const updatedQuestions = currentSurvey?.questions
+      ? currentSurvey?.questions.map((q) => {
+          const matchingResultsQuestion = addedQuestions.find(
+            (nq: Question) => new Date(nq.created_at).getTime() === new Date(q.created_at).getTime()
+          );
+          if (!matchingResultsQuestion) return q;
+          // save ids of old collectedQuestions to clear
+          idsToClear.push(q.id);
+          return matchingResultsQuestion;
+        })
+      : [];
+
+    setCurrentSurvey({
+      ...currentSurvey,
+      survey: currentSurvey?.survey || null,
+      questions: updatedQuestions,
+    });
+
+    setCurrentChanges({
+      ...currentChanges,
+      surveyId: currentSurvey?.survey?.id || null,
+      collectedQuestions: currentChanges.collectedQuestions.filter(
+        (cq) => !idsToClear.includes(cq.questionId)
+      ),
+      collectedDeletes: currentChanges.collectedDeletes.filter(
+        (cd) => !deletedQuestions.map((dq) => dq.id).includes(cd.id)
+      ),
+    });
+  };
+
+  /**
+   * @description Loads builder view of newly created survey, updates allSurveys and currentChanges state
+   * @param survey Survey object from db response
+   */
+  const loadCreatedSurvey = (survey: Survey) => {
+    setAllSurveys([...allSurveys, survey]);
+    router.push(`/builder/${survey.id}`, { scroll: true });
+    setCurrentChanges({
+      ...currentChanges,
+      surveyId: survey.id,
+      collectedQuestions: [],
+    });
+  };
+
+  const tryCreateSurveyInDb = async (name: string, questions: Question[]) => {
+    if (questions.length === 0) {
+      setErrorMessage("Please add questions to your survey");
+      setIsLoading(false);
+      return;
+    }
+
     const response = await fetch("/api/surveys", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ name, collectedQuestions }),
+      body: JSON.stringify({ name, questions }),
     });
 
     if (!response.ok) {
@@ -32,46 +104,40 @@ const SurveySubmitButton: FunctionComponent = () => {
       return;
     } else {
       const data = await response.json();
-
-      const survey = data.survey;
-      addSurvey(survey);
-      router.push(`/builder/${survey.id}`, { scroll: true });
-      setCurrentChanges({
-        ...currentChanges,
-        surveyId: survey.id || null,
-        collectedQuestions: [],
-      });
+      loadCreatedSurvey(data.survey);
     }
   };
 
   const tryAddQuestionsToDb = async (collectedQuestions: CollectedQuestion[]) => {
-    const surveyId = currentSurvey?.survey?.id;
-    const response = await fetch(`/api/surveys/${surveyId}/questions/`, {
+    if (collectedQuestions?.length == 0) return [];
+
+    const questions = currentSurvey?.questions.filter((q) =>
+      collectedQuestions.map((cq) => cq.questionId).includes(q.id)
+    );
+
+    const response = await fetch(`/api/surveys/${currentSurvey?.survey?.id}/questions/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ collectedQuestions }),
+      body: JSON.stringify({ questions }),
     });
 
     if (!response.ok) {
       console.error("ERROR, check api response: ", response);
       setErrorMessage(`${response.statusText}`);
       setIsLoading(false);
-      return;
+      return [];
     } else {
       const data = await response.json();
-      const newQuestions = data.questions;
-      setCurrentSurvey({
-        survey: currentSurvey?.survey || null,
-        questions: [...(currentSurvey?.questions || []), ...newQuestions],
-      });
+      return data.questions;
     }
   };
 
-  const tryDeleteQuestionsFromDb = async (collectedDeletes: CollectedDelete[]) => {
-    const surveyId = currentSurvey?.survey?.id;
-    const response = await fetch(`/api/surveys/${surveyId}/questions/`, {
+  const tryDeleteQuestionsFromDb = async (collectedDeletes: Question[]) => {
+    if (collectedDeletes?.length == 0) return [];
+
+    const response = await fetch(`/api/surveys/${currentSurvey?.survey?.id}/questions/`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
@@ -81,9 +147,14 @@ const SurveySubmitButton: FunctionComponent = () => {
 
     if (!response.ok) {
       console.error("ERROR, check api response: ", response);
+      alert("Error while deleting questions, please try again.");
       setErrorMessage(`${response.statusText}`);
       setIsLoading(false);
-      return;
+      return [];
+    } else {
+      const data = await response.json();
+      console.log("tryDeleteQuestionsFromDb: deleted q's:", data.questions);
+      return data.questions;
     }
   };
 
@@ -92,18 +163,16 @@ const SurveySubmitButton: FunctionComponent = () => {
     // if no survey, create new survey
     if (!currentSurvey?.survey) {
       const newSurveyName = randomString(); // TODO: get from user input
-      tryCreateSurveyInDb(newSurveyName, currentChanges.collectedQuestions);
+      tryCreateSurveyInDb(newSurveyName, currentSurvey?.questions || []);
       setIsLoading(false);
       return;
     }
-    // if questions, add to db
-    if (currentChanges.collectedQuestions?.length > 0) {
-      tryAddQuestionsToDb(currentChanges.collectedQuestions);
-    }
-    if (currentChanges.collectedDeletes?.length > 0) {
-      tryDeleteQuestionsFromDb(currentChanges.collectedDeletes);
-    }
-    setCurrentChanges({ ...currentChanges, collectedQuestions: [], collectedDeletes: [] });
+
+    const addedQuestions = await tryAddQuestionsToDb(currentChanges.collectedQuestions);
+    const deletedQuestions = await tryDeleteQuestionsFromDb(currentChanges.collectedDeletes);
+
+    updateClientSideWithResults(addedQuestions, deletedQuestions);
+
     setIsLoading(false);
   };
 
@@ -113,6 +182,7 @@ const SurveySubmitButton: FunctionComponent = () => {
         <Button disabled>SAVE & SHARE</Button>
       ) : (
         <Button
+          variant="huge"
           onClick={() => handleSubmit()}
           disabled={
             !checkForSurveyChanges(currentSurvey?.survey?.id || null, currentChanges) || isLoading

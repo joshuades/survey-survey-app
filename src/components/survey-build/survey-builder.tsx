@@ -19,7 +19,7 @@ export default function SurveyBuilder({
   surveyAndQuestions: SurveyAndQuestions;
 }) {
   const [isLoadingQuestions, setIsLoadingQuestions] = useState(true);
-  const { questionsLocal, clearQuestionsLocal } = useMyLocalStore();
+  const { questionsLocal, setQuestionsLocal } = useMyLocalStore();
   const { data: session } = useSession();
   const { setIsRouting } = useLoadingStore();
 
@@ -36,6 +36,11 @@ export default function SurveyBuilder({
       setCurrentSurvey(surveyAndQuestions);
     }
     setSelectedSurveyId(surveyAndQuestions?.survey?.id || null);
+    setCurrentChanges({
+      surveyId: surveyAndQuestions?.survey?.id || null,
+      collectedQuestions: [],
+      collectedDeletes: [],
+    });
     setIsLoadingQuestions(false);
     setIsRouting(false);
   }, []);
@@ -43,11 +48,11 @@ export default function SurveyBuilder({
   useEffect(() => {
     // If user logs in and there are questions in local storage, transfer them to the current changes
     if (!currentSurvey?.survey && session?.user && questionsLocal.length > 0) {
-      setCurrentChanges({
-        ...currentChanges,
-        collectedQuestions: [...currentChanges.collectedQuestions, ...questionsLocal],
+      setCurrentSurvey({
+        survey: null,
+        questions: [...(currentSurvey?.questions || []), ...questionsLocal],
       });
-      clearQuestionsLocal();
+      setQuestionsLocal([]);
     }
   }, [isLoadingQuestions]);
 
@@ -56,25 +61,33 @@ export default function SurveyBuilder({
   }, [questionsLocal]);
 
   const handleDeleteChanges = () => {
-    if (confirm("Are you sure you want to delete all survey changes?"))
+    if (confirm("Are you sure you want to delete all survey changes?")) {
+      setCurrentSurvey({
+        survey: currentSurvey?.survey || null,
+        questions: [...(currentSurvey?.questions || []), ...currentChanges.collectedDeletes].filter(
+          (q) => q.status !== "new"
+        ),
+      });
+
       setCurrentChanges({
         ...currentChanges,
         surveyId: surveyAndQuestions?.survey?.id || null,
         collectedQuestions: [],
         collectedDeletes: [],
       });
+    }
   };
 
   return (
     <div className="grid w-full gap-[60px]">
-      <BuilderControlRow surveyAndQuestions={surveyAndQuestions} />
+      <BuilderControlRow />
 
       {!isLoadingQuestions ? (
         <>
           {(checkForSurveyChanges(currentSurvey?.survey?.id || null, currentChanges) ||
             (currentSurvey?.questions && currentSurvey.questions.length > 0)) && (
             <FadeInWrapper>
-              <Questions />
+              <Questions sortOrder="DESC" />
             </FadeInWrapper>
           )}
         </>
@@ -89,7 +102,7 @@ export default function SurveyBuilder({
       {!isLoadingQuestions ? (
         <>
           {checkForSurveyChanges(currentSurvey?.survey?.id || null, currentChanges) && (
-            <div className="mx-2 flex justify-between gap-5">
+            <div className="mx-2 flex flex-wrap justify-between gap-[40px_5px]">
               <SurveySubmitButton />
               <Button onClick={() => handleDeleteChanges()} variant={"secondary"}>
                 Delete Changes

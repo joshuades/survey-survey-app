@@ -13,7 +13,7 @@ export default async function SurveyManagementLayout({
 }>) {
   return (
     <div className="grid min-h-screen grid-rows-[max-content] justify-center">
-      <div className="flex w-[100vw] max-w-[600px] flex-col gap-[90px] pt-[90px] xl:w-[800px] xl:max-w-[800px]">
+      <div className="flex w-[100vw] max-w-[98vw] flex-col gap-[90px] pt-[90px] md:max-w-[600px] xl:w-[800px] xl:max-w-[800px]">
         {children}
 
         <MainNavBox>
