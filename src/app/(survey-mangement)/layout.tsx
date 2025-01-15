@@ -18,6 +18,7 @@ export default async function SurveyManagementLayout({
 
         <MainNavBox>
           <SurveysWrapper>
+            {/* fetched surveys passed down from SurveysWrapper */}
             <Surveys surveys={[]} />
           </SurveysWrapper>
 

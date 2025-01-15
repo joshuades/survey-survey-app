@@ -73,7 +73,7 @@ const SurveySubmitButton: FunctionComponent = () => {
    * @param survey Survey object from db response
    */
   const loadCreatedSurvey = (survey: Survey) => {
-    setAllSurveys([...allSurveys, survey]);
+    setAllSurveys([survey, ...allSurveys]);
     router.push(`/builder/${survey.id}`, { scroll: true });
     setCurrentChanges({
       ...currentChanges,

@@ -8,8 +8,14 @@ import { Button } from "../ui/button";
 import SurveyShareDrawer from "./survey-share-drawer";
 
 const SurveysNav: React.FC = () => {
-  const { currentSurvey, selectedSurveyId, toggleSelectedSurveyId, removeSurvey, currentChanges } =
-    useStore();
+  const {
+    currentSurvey,
+    selectedSurveyId,
+    toggleSelectedSurveyId,
+    currentChanges,
+    allSurveys,
+    setAllSurveys,
+  } = useStore();
   const { setIsRouting } = useLoadingStore();
   const router = useRouter();
   const pathname = usePathname();
@@ -66,7 +72,7 @@ const SurveysNav: React.FC = () => {
     if (response.ok) {
       // delete in state
       toggleSelectedSurveyId(id);
-      removeSurvey(id); // same as data.survey[0].id
+      setAllSurveys(allSurveys.filter((s) => s.id !== id)); // same as data.survey[0].id
     } else {
       console.error("Failed to delete survey:", data);
     }
