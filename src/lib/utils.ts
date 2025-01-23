@@ -59,3 +59,11 @@ export const setCollectedUpdates = (
   });
   return collectedUpdates;
 };
+
+/* ******* ANIMATIONS ******* */
+
+export const springTransition = {
+  type: "spring",
+  damping: 20,
+  stiffness: 300,
+};

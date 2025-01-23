@@ -1,6 +1,8 @@
 "use client";
 
+import { springTransition } from "@/lib/utils";
 import { useStore } from "@/store/surveysStore";
+import { motion } from "framer-motion";
 import { FC, useMemo } from "react";
 import QuestionDeleteButton from "./question-delete-button";
 import QuestionMoveButtons from "./question-move-buttons";
@@ -32,8 +34,10 @@ const Questions: FC<QuestionsProps> = ({ sortOrder }) => {
   return (
     <ul className="mx-2 flex flex-col gap-[25px] text-[32px] font-light">
       {sortedQuestions.map((question, i) => (
-        <li
-          key={new Date(question.created_at).getTime() + i}
+        <motion.li
+          layout
+          transition={springTransition}
+          key={question.id}
           className="grid grid-cols-[auto,_min-content] gap-2"
         >
           <div className="relative grid gap-[5px]">
@@ -49,7 +53,7 @@ const Questions: FC<QuestionsProps> = ({ sortOrder }) => {
             <QuestionMoveButtons question={question} />
             <QuestionDeleteButton question={question} />
           </div>
-        </li>
+        </motion.li>
       ))}
     </ul>
   );
