@@ -47,11 +47,11 @@ const SurveysNav: React.FC = () => {
     {
       name: "del",
       disabled: false,
-      onClick: (surveyId: number) => handleDelete(surveyId),
+      onClick: (surveyId: number) => handleSurveyDelete(surveyId),
     },
   ];
 
-  const handleDelete = async (id: number) => {
+  const handleSurveyDelete = async (id: number) => {
     if (!confirm("Are you sure you want to delete the selected survey?")) return;
 
     const response = await fetch(`/api/surveys/${id}`, {
@@ -60,20 +60,17 @@ const SurveysNav: React.FC = () => {
         "Content-Type": "application/json",
       },
     });
+    const data = await response.json();
 
     if (!response.ok) {
-      console.error("Failed to delete survey, check api response: ", response);
+      console.error("Failed to delete survey, check api response: ", data);
+      // TODO: show error message
       return;
     }
 
-    const data = await response.json();
-    if (response.ok) {
-      // delete in state
-      toggleSelectedSurveyId(id);
-      setAllSurveys(allSurveys.filter((s) => s.id !== id)); // same as data.survey[0].id
-    } else {
-      console.error("Failed to delete survey:", data);
-    }
+    // delete in state
+    toggleSelectedSurveyId(id);
+    setAllSurveys(allSurveys.filter((s) => s.id !== id)); // same as data.survey[0].id
   };
 
   const confirmedRouteTo = (path: string) => {

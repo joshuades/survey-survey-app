@@ -87,7 +87,6 @@ const SurveySubmitButton: FunctionComponent = () => {
   const tryCreateSurveyInDb = async (name: string, questions: Question[]) => {
     if (questions.length === 0) {
       setErrorMessage("Please add questions to your survey");
-      setIsLoading(false);
       return;
     }
 
@@ -98,16 +97,15 @@ const SurveySubmitButton: FunctionComponent = () => {
       },
       body: JSON.stringify({ name, questions }),
     });
+    const data = await response.json();
 
     if (!response.ok) {
-      console.error("ERROR, check api response: ", response);
-      setErrorMessage(`${response.statusText}`);
-      setIsLoading(false);
+      console.error("Failed to create survey, check api response: ", data);
+      setErrorMessage(`${data.error}`);
       return;
-    } else {
-      const data = await response.json();
-      loadCreatedSurvey(data.survey);
     }
+
+    loadCreatedSurvey(data.survey as Survey);
   };
 
   const tryAddQuestionsToDb = async (collectedQuestions: QuestionPointer[]) => {
@@ -124,16 +122,15 @@ const SurveySubmitButton: FunctionComponent = () => {
       },
       body: JSON.stringify({ questions }),
     });
+    const data = await response.json();
 
     if (!response.ok) {
-      console.error("ERROR, check api response: ", response);
-      setErrorMessage(`${response.statusText}`);
-      setIsLoading(false);
+      console.error("Failed adding questions, check api response: ", data);
+      setErrorMessage(`${data.error}`);
       return [];
-    } else {
-      const data = await response.json();
-      return data.questions;
     }
+
+    return data.questions;
   };
 
   const tryDeleteQuestionsFromDb = async (collectedDeletes: Question[]) => {
@@ -146,18 +143,15 @@ const SurveySubmitButton: FunctionComponent = () => {
       },
       body: JSON.stringify({ collectedDeletes }),
     });
+    const data = await response.json();
 
     if (!response.ok) {
-      console.error("ERROR, check api response: ", response);
-      alert("Error while deleting questions, please try again.");
-      setErrorMessage(`${response.statusText}`);
-      setIsLoading(false);
+      console.error("Failed to delete survey, check api response: ", data);
+      setErrorMessage(`${data.error}`);
       return [];
-    } else {
-      const data = await response.json();
-      console.log("tryDeleteQuestionsFromDb: deleted q's:", data.questions);
-      return data.questions;
     }
+
+    return data.questions;
   };
 
   const tryUpdateQuestionsInDb = async (collectedUpdates: CollectedUpdate[]) => {
@@ -185,17 +179,15 @@ const SurveySubmitButton: FunctionComponent = () => {
       },
       body: JSON.stringify({ patchUpdates }),
     });
-
     const data = await response.json();
 
     if (!response.ok) {
-      console.error("ERROR, check api response: ", response);
+      console.error("Failed to update questions, check api response: ", data);
       setErrorMessage(`${data.error}`);
-      setIsLoading(false);
       return false;
-    } else {
-      return true;
     }
+
+    return true;
   };
 
   const handleSubmit = async () => {

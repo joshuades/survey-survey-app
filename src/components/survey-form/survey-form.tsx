@@ -47,13 +47,12 @@ export function SurveyForm({
       created_at: new Date(),
       // answerBoolean?: boolean | null;
     };
-
     // filter collectedAnswers if same question was already answered
     const filteredCollectedAnswers = collectedAnswers.filter(
       (a) => a.questionId !== Number(questionId)
     );
-
-    setCollectedAnswers([...filteredCollectedAnswers, collectedAnswer]);
+    const allCollectedAnswers = [...filteredCollectedAnswers, collectedAnswer];
+    setCollectedAnswers(allCollectedAnswers);
 
     if (currentIndex < questionIds.length - 1) {
       router.push(`/${survey.id}/q/${questionIds[currentIndex + 1]}`);
@@ -61,7 +60,7 @@ export function SurveyForm({
       setIsLoading(true);
       const createSuccessful = await tryCreateAnswersInDb(
         survey.id,
-        [...filteredCollectedAnswers, collectedAnswer],
+        allCollectedAnswers,
         collectedAnswerer
       );
       if (!createSuccessful) {
@@ -86,15 +85,14 @@ export function SurveyForm({
       },
       body: JSON.stringify({ collectedAnswers, collectedAnswerer }),
     });
+    const data = await response.json();
 
     if (!response.ok) {
-      console.error("ERROR, check api response: ", response);
+      console.error("Failed creating answers, check api response: ", data);
       return false;
-    } else {
-      const data = await response.json();
-      console.log("Created answers:", data.answers);
-      return true;
     }
+
+    return true;
   };
 
   if (!currentQuestion) {
