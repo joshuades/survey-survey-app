@@ -4,6 +4,7 @@ import { Question } from "@/db";
 import { useStore } from "@/store/surveysStore";
 import { FC, useMemo } from "react";
 import { Button } from "../ui/button";
+import QuestionMoveButtons from "./question-move-buttons";
 
 interface QuestionsProps {
   sortOrder: "ASC" | "DESC";
@@ -29,7 +30,7 @@ const Questions: FC<QuestionsProps> = ({ sortOrder }) => {
         ),
       });
     }
-    // if question was already saved in db ("active"), put question in collectedDeletes
+    // if question was already saved in db ("active"), put question in deletedQuestions
     else if (question.status == "active") {
       if (!currentSurvey?.survey?.id) {
         console.error("currentSurvey.survey.id not defined");
@@ -38,7 +39,7 @@ const Questions: FC<QuestionsProps> = ({ sortOrder }) => {
       setCurrentChanges({
         ...currentChanges,
         surveyId: currentSurvey?.survey?.id,
-        collectedDeletes: [...currentChanges.collectedDeletes, question],
+        deletedQuestions: [...currentChanges.deletedQuestions, question],
       });
     }
   };
@@ -76,7 +77,8 @@ const Questions: FC<QuestionsProps> = ({ sortOrder }) => {
               <span className="text-sm font-semibold uppercase">{question.status}</span>
             )}
           </div>
-          <div className="flex flex-col justify-end pb-[10px]">
+          <div className="flex flex-col justify-end gap-[15px] pb-[10px]">
+            <QuestionMoveButtons question={question} />
             <Button variant={"secondary"} onClick={() => handleDeleteQuestion(question)}>
               Del
             </Button>

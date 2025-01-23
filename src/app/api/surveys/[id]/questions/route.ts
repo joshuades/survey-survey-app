@@ -1,4 +1,4 @@
-import { createQuestions, deleteQuestions, getQuestionsForSurvey } from "@/db";
+import { createQuestions, deleteQuestions, getQuestionsForSurvey, updateQuestions } from "@/db";
 import { NextRequest, NextResponse } from "next/server";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -61,4 +61,27 @@ export const DELETE = async (req: NextRequest, context: { params: { id: string }
     { questions, message: "Questions deleted successfully" },
     { status: 200 }
   );
+};
+
+export const PATCH = async (req: NextRequest, context: { params: { id: string } }) => {
+  const surveyId = context.params.id;
+  const { patchUpdates } = await req.json();
+  if (!patchUpdates) {
+    return Response.json({ error: "Updates not provided" }, { status: 400 });
+  }
+  const { message } = await updateQuestions(patchUpdates, Number(surveyId));
+
+  if (message === "unauthenticated") {
+    return Response.json({ error: "Not authenticated" }, { status: 401 });
+  }
+  if (message === "unauthorized") {
+    return Response.json({ error: "Please log in with the correct account." }, { status: 403 });
+  }
+  if (message === "partial error") {
+    return Response.json({ error: "Please reload the page and try again." }, { status: 500 });
+  }
+  if (message === "not found") {
+    return Response.json({ error: "Question to update not found." }, { status: 404 });
+  }
+  return Response.json({ message: "Questions updated successfully" }, { status: 200 });
 };

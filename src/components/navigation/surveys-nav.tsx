@@ -52,9 +52,7 @@ const SurveysNav: React.FC = () => {
   ];
 
   const handleDelete = async (id: number) => {
-    if (!confirm("Are you sure you want to delete the selected survey?")) {
-      return;
-    }
+    if (!confirm("Are you sure you want to delete the selected survey?")) return;
 
     const response = await fetch(`/api/surveys/${id}`, {
       method: "DELETE",

@@ -1,8 +1,8 @@
 "use client";
 
-import { Question, Survey } from "@/db";
+import { type PatchUpdate, type Question, type Survey } from "@/db";
 import { checkForSurveyChanges, randomString } from "@/lib/utils";
-import { CollectedQuestion, useStore } from "@/store/surveysStore";
+import { type CollectedUpdate, type QuestionPointer, useStore } from "@/store/surveysStore";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { FunctionComponent, useEffect, useState } from "react";
@@ -28,19 +28,19 @@ const SurveySubmitButton: FunctionComponent = () => {
   }, [currentSurvey]);
 
   /**
-   * @description Updates currentSurvey questions with freshly added questions from db (e.g. updates id, status & surveyId by using comparing created_at) & clears collectedQuestions and collectedDeletes
-   * @param addedQuestions Questions from db response, when adding questions to db
-   * @param deletedQuestions Questions from db response, when deleting questions from db
+   * @description Updates currentSurvey questions with freshly added questions from db (e.g. updates id, status & surveyId by using comparing created_at) & clears collectedQuestions and deletedQuestions
+   * @param confirmedAddedQs Questions from db response, when adding questions to db
+   * @param confirmedDeletedQs Questions from db response, when deleting questions from db
    */
   const updateClientSideWithResults = (
-    addedQuestions: Question[],
-    deletedQuestions: Question[]
+    confirmedAddedQs: Question[],
+    confirmedDeletedQs: Question[]
   ) => {
     const idsToClear: number[] = [];
 
     const updatedQuestions = currentSurvey?.questions
       ? currentSurvey?.questions.map((q) => {
-          const matchingResultsQuestion = addedQuestions.find(
+          const matchingResultsQuestion = confirmedAddedQs.find(
             (nq: Question) => new Date(nq.created_at).getTime() === new Date(q.created_at).getTime()
           );
           if (!matchingResultsQuestion) return q;
@@ -62,9 +62,10 @@ const SurveySubmitButton: FunctionComponent = () => {
       collectedQuestions: currentChanges.collectedQuestions.filter(
         (cq) => !idsToClear.includes(cq.questionId)
       ),
-      collectedDeletes: currentChanges.collectedDeletes.filter(
-        (cd) => !deletedQuestions.map((dq) => dq.id).includes(cd.id)
+      deletedQuestions: currentChanges.deletedQuestions.filter(
+        (dq) => !confirmedDeletedQs.map((cdq) => cdq.id).includes(dq.id)
       ),
+      collectedUpdates: [],
     });
   };
 
@@ -79,6 +80,7 @@ const SurveySubmitButton: FunctionComponent = () => {
       ...currentChanges,
       surveyId: survey.id,
       collectedQuestions: [],
+      collectedUpdates: [],
     });
   };
 
@@ -108,7 +110,7 @@ const SurveySubmitButton: FunctionComponent = () => {
     }
   };
 
-  const tryAddQuestionsToDb = async (collectedQuestions: CollectedQuestion[]) => {
+  const tryAddQuestionsToDb = async (collectedQuestions: QuestionPointer[]) => {
     if (collectedQuestions?.length == 0) return [];
 
     const questions = currentSurvey?.questions.filter((q) =>
@@ -158,6 +160,44 @@ const SurveySubmitButton: FunctionComponent = () => {
     }
   };
 
+  const tryUpdateQuestionsInDb = async (collectedUpdates: CollectedUpdate[]) => {
+    if (collectedUpdates?.length == 0) return true;
+
+    // filter out collectedUpdates for new questions and deleted questions
+    const filteredCollectedUpdates = collectedUpdates.filter((cu) => {
+      if (cu.questionStatus === "new") return false;
+      return true;
+    });
+    currentChanges.deletedQuestions.forEach((dq) => {
+      filteredCollectedUpdates.filter((cu) => cu.questionId !== dq.id);
+    });
+
+    // parse collectedUpdates to PatchUpdate objects
+    const patchUpdates: PatchUpdate[] = [];
+    filteredCollectedUpdates.forEach((cu) => {
+      patchUpdates.push({ id: cu.questionId, [cu.field]: cu.newValue });
+    });
+
+    const response = await fetch(`/api/surveys/${currentSurvey?.survey?.id}/questions/`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ patchUpdates }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error("ERROR, check api response: ", response);
+      setErrorMessage(`${data.error}`);
+      setIsLoading(false);
+      return false;
+    } else {
+      return true;
+    }
+  };
+
   const handleSubmit = async () => {
     setIsLoading(true);
     // if no survey, create new survey
@@ -168,11 +208,11 @@ const SurveySubmitButton: FunctionComponent = () => {
       return;
     }
 
-    const addedQuestions = await tryAddQuestionsToDb(currentChanges.collectedQuestions);
-    const deletedQuestions = await tryDeleteQuestionsFromDb(currentChanges.collectedDeletes);
+    const confirmedAddedQs = await tryAddQuestionsToDb(currentChanges.collectedQuestions);
+    const confirmedDeletedQs = await tryDeleteQuestionsFromDb(currentChanges.deletedQuestions);
+    await tryUpdateQuestionsInDb(currentChanges.collectedUpdates);
 
-    updateClientSideWithResults(addedQuestions, deletedQuestions);
-
+    updateClientSideWithResults(confirmedAddedQs, confirmedDeletedQs);
     setIsLoading(false);
   };
 
@@ -193,7 +233,9 @@ const SurveySubmitButton: FunctionComponent = () => {
       )}
       {!session?.user?.email && <div> (Sign in to save your survey)</div>}
       {errorMessage && (
-        <p className="flex flex-col justify-end text-custom-warning">{errorMessage}</p>
+        <p className="absolute top-[200%] flex flex-col justify-end text-custom-warning lg:top-[120%]">
+          {errorMessage}
+        </p>
       )}
     </div>
   );

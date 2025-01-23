@@ -39,7 +39,8 @@ export default function SurveyBuilder({
     setCurrentChanges({
       surveyId: surveyAndQuestions?.survey?.id || null,
       collectedQuestions: [],
-      collectedDeletes: [],
+      deletedQuestions: [],
+      collectedUpdates: [],
     });
     setIsLoadingQuestions(false);
     setIsRouting(false);
@@ -60,22 +61,43 @@ export default function SurveyBuilder({
     console.log("questionsLocal:", questionsLocal);
   }, [questionsLocal]);
 
-  const handleDeleteChanges = () => {
-    if (confirm("Are you sure you want to delete all survey changes?")) {
-      setCurrentSurvey({
-        survey: currentSurvey?.survey || null,
-        questions: [...(currentSurvey?.questions || []), ...currentChanges.collectedDeletes].filter(
-          (q) => q.status !== "new"
-        ),
+  /**
+   * Retrieves the original questions from the current survey, including any deleted questions,
+   * and restores their original values based on the collected updates.
+   *
+   * @returns {Array} An array of questions with their original values restored.
+   */
+  const getOriginalQuestions = () => {
+    return [...(currentSurvey?.questions || []), ...currentChanges.deletedQuestions]
+      .filter((q) => q.status !== "new")
+      .map((q) => {
+        const collectedUpdates_for_q = currentChanges.collectedUpdates.filter(
+          (cu) => cu.questionId === q.id
+        );
+        // for each update, restore the originalValue of the question
+        collectedUpdates_for_q.forEach((cu) => {
+          /* eslint-disable  @typescript-eslint/no-explicit-any */
+          (q as any)[cu.field] = cu.originalValue;
+        });
+        return q;
       });
+  };
 
-      setCurrentChanges({
-        ...currentChanges,
-        surveyId: surveyAndQuestions?.survey?.id || null,
-        collectedQuestions: [],
-        collectedDeletes: [],
-      });
-    }
+  const handleDeleteChanges = () => {
+    if (!confirm("Are you sure you want to delete all survey changes?")) return;
+
+    setCurrentSurvey({
+      survey: currentSurvey?.survey || null,
+      questions: getOriginalQuestions(),
+    });
+
+    setCurrentChanges({
+      ...currentChanges,
+      surveyId: surveyAndQuestions?.survey?.id || null,
+      collectedQuestions: [],
+      deletedQuestions: [],
+      collectedUpdates: [],
+    });
   };
 
   return (
@@ -102,7 +124,7 @@ export default function SurveyBuilder({
       {!isLoadingQuestions ? (
         <>
           {checkForSurveyChanges(currentSurvey?.survey?.id || null, currentChanges) && (
-            <div className="mx-2 flex flex-wrap justify-between gap-[40px_5px]">
+            <div className="relative mx-2 flex flex-wrap justify-between gap-[40px_5px]">
               <SurveySubmitButton />
               <Button onClick={() => handleDeleteChanges()} variant={"secondary"}>
                 Delete Changes

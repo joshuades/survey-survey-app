@@ -60,6 +60,11 @@ export interface Answerer extends CollectedAnswerer {
   id: number;
 }
 
+export interface PatchUpdate {
+  id: number;
+  [key: string]: string | number;
+}
+
 // SURVEY FUNCTIONS
 
 export async function createSurvey(name: string, questions: Question[]) {
@@ -386,6 +391,68 @@ export async function getQuestionById(id: number, surveyId: number) {
   return { question, message: "success" };
 }
 
+export async function updateQuestions(patchUpdates: PatchUpdate[], surveyId: number) {
+  const session = await auth();
+  if (!session?.user) return { message: "unauthenticated" };
+  if (!(await isAuthorized(surveyId, session?.user))) {
+    return { message: "unauthorized" };
+  }
+  if (patchUpdates.length === 0) {
+    return { message: "internal error" };
+  }
+  /* eslint-disable  @typescript-eslint/no-explicit-any */
+  const errors: any[] = [];
+
+  // prepare update query for: INDEX UPDATES
+  const index_up_query = db
+    .update(questionTable)
+    .set({ index: sql`CAST(${sql.placeholder("index")} AS INT)` })
+    .where(eq(questionTable.id, sql.placeholder("id")))
+    .prepare("index_up_query");
+
+  /**
+   * Executes an update query for a specific patch update.
+   *
+   * @returns {Promise<any>} The result of the update query.
+   */
+  function executeTask(patchUpdate: PatchUpdate) {
+    if (patchUpdate.hasOwnProperty("index")) {
+      return index_up_query.execute(patchUpdate);
+    }
+  }
+
+  /**
+   * Executes a series of patch updates by preparing and running tasks concurrently.
+   *
+   * @param {PatchUpdate[]} patchUpdates - An array of patch update objects to be processed.
+   * @returns {Promise<void>} A promise that resolves when all tasks have been executed.
+   */
+  async function run(patchUpdates: PatchUpdate[]) {
+    /* eslint-disable  @typescript-eslint/no-explicit-any */
+    const prepared_tasks: any[] = [];
+    patchUpdates.forEach((patchUpdate) => {
+      prepared_tasks.push(executeTask(patchUpdate));
+    });
+    await Promise.all(prepared_tasks);
+  }
+
+  try {
+    await run(patchUpdates);
+  } catch (e) {
+    console.error("Caught error: ", e);
+    errors.push(e);
+  }
+
+  if (errors.length > 0) {
+    forceIndexes(surveyId);
+    return { message: "partial error" };
+  }
+
+  await db.update(surveyTable).set({ updated_at: new Date() }).where(eq(surveyTable.id, surveyId));
+
+  return { message: "success" };
+}
+
 // ANSWER FUNCTIONS
 
 export async function createAnswers(
@@ -470,11 +537,33 @@ export async function updateUser(username: string, thankYouMessage: string) {
 
 // HELPER FUNCTIONS
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+/* eslint-disable  @typescript-eslint/no-explicit-any */
 async function isAuthorized(surveyId: number, user: any) {
   const survey = await db.select().from(surveyTable).where(eq(surveyTable.id, surveyId));
   if (survey.length > 0 && survey[0].userId !== user.id) {
     return false;
   }
   return true;
+}
+
+/**
+ * Used when updating questions' indexes failed.
+ *
+ * Sorts all questions by their current index and then updates each question's index
+ * to ensure they are sequentially ordered starting from 1.
+ */
+async function forceIndexes(surveyId: number) {
+  const questions = await db
+    .select()
+    .from(questionTable)
+    .where(eq(questionTable.surveyId, surveyId))
+    .orderBy(questionTable.index);
+
+  questions.forEach(async (question, i) => {
+    await db
+      .update(questionTable)
+      .set({ index: i + 1 })
+      .where(eq(questionTable.id, question.id));
+    // TODO: throw error if update fails
+  });
 }

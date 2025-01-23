@@ -4,11 +4,21 @@ import { createJSONStorage, persist } from "zustand/middleware";
 
 export interface CurrentChanges {
   surveyId: number | null;
-  collectedQuestions: CollectedQuestion[];
-  collectedDeletes: Question[];
+  collectedQuestions: QuestionPointer[];
+  deletedQuestions: Question[];
+  collectedUpdates: CollectedUpdate[];
 }
 
-export interface CollectedQuestion {
+export interface CollectedUpdate {
+  questionId: number;
+  field: string;
+  newValue: string | number;
+  originalValue: string | number;
+  questionStatus: string; // used to ignore new questions on submit
+  collected_at: Date;
+}
+
+export interface QuestionPointer {
   questionId: number;
 }
 
@@ -48,7 +58,12 @@ export interface SurveyActions {
 
 export const useStore = create<SurveyState & SurveyActions>()((set) => ({
   currentSurvey: null,
-  currentChanges: { surveyId: null, collectedQuestions: [], collectedDeletes: [] },
+  currentChanges: {
+    surveyId: null,
+    collectedQuestions: [],
+    deletedQuestions: [],
+    collectedUpdates: [],
+  },
   newQuestion: "",
   allSurveys: [],
   selectedSurveyId: null,
