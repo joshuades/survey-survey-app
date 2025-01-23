@@ -1,41 +1,49 @@
 "use client";
 
 import { Question } from "@/db";
-import { useStore } from "@/store/surveysStore";
+import { setCollectedUpdates } from "@/lib/utils";
+import { CollectedUpdate, useStore } from "@/store/surveysStore";
 import { Button } from "../ui/button";
 
 export default function QuestionDeleteButton({ question }: { question: Question }) {
   const { currentSurvey, setCurrentSurvey, currentChanges, setCurrentChanges } = useStore();
 
   const handleDeleteQuestion = (question: Question): void => {
-    // delete from currentSurvey
+    // delete from currentSurvey and decrement index of all questions after the deleted question
+    const newIndexUpdates: CollectedUpdate[] = [];
     setCurrentSurvey({
       ...currentSurvey,
       survey: currentSurvey?.survey || null,
-      questions: currentSurvey?.questions?.filter((q) => q.id !== question.id) || [],
+      questions: [...(currentSurvey?.questions.filter((q) => q.id !== question.id) || [])] // delete question
+        .map((q) => {
+          if (q.index > question.index) {
+            newIndexUpdates.push({
+              questionId: q.id,
+              field: "index",
+              newValue: q.index - 1,
+              originalValue: q.index,
+              questionStatus: q.status,
+              collected_at: new Date(),
+            }); // collect new index update
+            return { ...q, index: q.index - 1 }; // update index
+          }
+          return q;
+        }),
     });
-    // if new, remove question from collectedQuestions
-    if (question.status == "new") {
-      setCurrentChanges({
-        ...currentChanges,
-        surveyId: currentSurvey?.survey?.id || null,
-        collectedQuestions: currentChanges.collectedQuestions.filter(
-          (q) => q.questionId !== question.id
-        ),
-      });
-    }
-    // if question was already saved in db ("active"), put question in deletedQuestions
-    else if (question.status == "active") {
-      if (!currentSurvey?.survey?.id) {
-        console.error("currentSurvey.survey.id not defined");
-        return;
-      }
-      setCurrentChanges({
-        ...currentChanges,
-        surveyId: currentSurvey?.survey?.id,
-        deletedQuestions: [...currentChanges.deletedQuestions, question],
-      });
-    }
+
+    setCurrentChanges({
+      ...currentChanges,
+      surveyId: currentSurvey?.survey?.id || null,
+      collectedQuestions:
+        question.status == "new"
+          ? currentChanges.collectedQuestions.filter((q) => q.questionId !== question.id) // remove from collectedQuestions
+          : currentChanges.collectedQuestions,
+      deletedQuestions:
+        question.status == "active"
+          ? [...currentChanges.deletedQuestions, question] // add to deletedQuestions
+          : currentChanges.deletedQuestions,
+      collectedUpdates: setCollectedUpdates(currentChanges.collectedUpdates, newIndexUpdates),
+    });
   };
 
   return (
