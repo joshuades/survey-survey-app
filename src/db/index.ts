@@ -296,16 +296,7 @@ export async function createQuestions(
     return { questions: createdQuestions, message: "internal error" };
   }
 
-  // updated updated_at on the survey
-  const survey = await db
-    .update(surveyTable)
-    .set({ updated_at: new Date() })
-    .where(eq(surveyTable.id, surveyId))
-    .returning();
-
-  if (!survey || survey.length == 0) {
-    return { survey, message: "internal error" };
-  }
+  await db.update(surveyTable).set({ updated_at: new Date() }).where(eq(surveyTable.id, surveyId));
 
   return { questions: createdQuestions, message: "success" };
 }
@@ -325,11 +316,7 @@ export async function updateQuestion(id: number, questionText: string, surveyId:
     .returning();
   if (!question || question.length == 0) return { question, message: "not found" };
 
-  await db
-    .update(surveyTable)
-    .set({ updated_at: new Date() })
-    .where(eq(surveyTable.id, surveyId))
-    .returning();
+  await db.update(surveyTable).set({ updated_at: new Date() }).where(eq(surveyTable.id, surveyId));
 
   return { question, message: "success" };
 }
@@ -345,11 +332,7 @@ export async function deleteQuestion(id: number, surveyId: number) {
   const question = await db.delete(questionTable).where(eq(questionTable.id, id)).returning();
   if (!question || question.length == 0) return { question, message: "not found" };
 
-  await db
-    .update(surveyTable)
-    .set({ updated_at: new Date() })
-    .where(eq(surveyTable.id, surveyId))
-    .returning();
+  await db.update(surveyTable).set({ updated_at: new Date() }).where(eq(surveyTable.id, surveyId));
 
   return { question, message: "success" };
 }
@@ -369,11 +352,7 @@ export async function deleteQuestions(collectedDeletes: Question[], surveyId: nu
 
   if (!deletedQuestions || deletedQuestions.length == 0) return { message: "not found" };
 
-  await db
-    .update(surveyTable)
-    .set({ updated_at: new Date() })
-    .where(eq(surveyTable.id, surveyId))
-    .returning();
+  await db.update(surveyTable).set({ updated_at: new Date() }).where(eq(surveyTable.id, surveyId));
 
   return { questions: deletedQuestions, message: "success" };
 }
