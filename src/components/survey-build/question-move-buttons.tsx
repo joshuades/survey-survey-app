@@ -1,46 +1,9 @@
 "use client";
 
 import { Question } from "@/db";
-import { CollectedUpdate, useStore } from "@/store/surveysStore";
+import { setCollectedUpdates } from "@/lib/utils";
+import { useStore } from "@/store/surveysStore";
 import { Button } from "../ui/button";
-
-/**
- * Updates the collected updates array with new collected updates.
- *
- * For all new collectedUpdates:
- * - Only add new collectedUpdate if it doesn't exist yet (its questionId and field).
- * - If you can find it, and its originalValue is the same as the newValue of the newCollectedUpdate, remove it.
- * - If you can find it, and its originalValue is different from the newValue of the newCollectedUpdate, update it.
- */
-const setCollectedUpdates = (
-  collectedUpdates: CollectedUpdate[],
-  newCollectedUpdates: CollectedUpdate[]
-): CollectedUpdate[] => {
-  newCollectedUpdates.forEach((newCollectedUpdate) => {
-    collectedUpdates =
-      collectedUpdates.find(
-        (cu) =>
-          cu.questionId === newCollectedUpdate.questionId && cu.field === newCollectedUpdate.field
-      ) === undefined
-        ? [...collectedUpdates, newCollectedUpdate]
-        : collectedUpdates
-            .map((cu) =>
-              cu.questionId === newCollectedUpdate.questionId &&
-              cu.field === newCollectedUpdate.field
-                ? cu.originalValue === newCollectedUpdate.newValue
-                  ? null
-                  : {
-                      ...cu,
-                      newValue: newCollectedUpdate.newValue,
-                      updated_at: newCollectedUpdate.collected_at,
-                    }
-                : cu
-            )
-
-            .filter((cu) => cu !== null);
-  });
-  return collectedUpdates;
-};
 
 export default function QuestionMoveButtons({ question }: { question: Question }) {
   const { currentSurvey, setCurrentSurvey, currentChanges, setCurrentChanges } = useStore();
