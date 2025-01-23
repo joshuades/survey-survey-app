@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { SurveyAndQuestions } from "@/db";
 import { checkForSurveyChanges } from "@/lib/utils";
 import { useLoadingStore } from "@/store/loadingStore";
@@ -10,6 +9,7 @@ import { useEffect, useState } from "react";
 import FadeInWrapper from "../fade-in-wrapper";
 import { Skeleton } from "../ui/skeleton";
 import BuilderControlRow from "./builder-control-row";
+import DeleteChangesButton from "./delete-changes-button";
 import Questions from "./questions";
 import SurveySubmitButton from "./survey-submit-button";
 
@@ -61,45 +61,6 @@ export default function SurveyBuilder({
     console.log("questionsLocal:", questionsLocal);
   }, [questionsLocal]);
 
-  /**
-   * Retrieves the original questions from the current survey, including any deleted questions,
-   * and restores their original values based on the collected updates.
-   *
-   * @returns {Array} An array of questions with their original values restored.
-   */
-  const getOriginalQuestions = () => {
-    return [...(currentSurvey?.questions || []), ...currentChanges.deletedQuestions]
-      .filter((q) => q.status !== "new")
-      .map((q) => {
-        const collectedUpdates_for_q = currentChanges.collectedUpdates.filter(
-          (cu) => cu.questionId === q.id
-        );
-        // for each update, restore the originalValue of the question
-        collectedUpdates_for_q.forEach((cu) => {
-          /* eslint-disable  @typescript-eslint/no-explicit-any */
-          (q as any)[cu.field] = cu.originalValue;
-        });
-        return q;
-      });
-  };
-
-  const handleDeleteChanges = () => {
-    if (!confirm("Are you sure you want to delete all survey changes?")) return;
-
-    setCurrentSurvey({
-      survey: currentSurvey?.survey || null,
-      questions: getOriginalQuestions(),
-    });
-
-    setCurrentChanges({
-      ...currentChanges,
-      surveyId: surveyAndQuestions?.survey?.id || null,
-      collectedQuestions: [],
-      deletedQuestions: [],
-      collectedUpdates: [],
-    });
-  };
-
   return (
     <div className="grid w-full gap-[60px]">
       <BuilderControlRow />
@@ -126,9 +87,7 @@ export default function SurveyBuilder({
           {checkForSurveyChanges(currentSurvey?.survey?.id || null, currentChanges) && (
             <div className="relative mx-2 flex flex-wrap justify-between gap-[40px_5px]">
               <SurveySubmitButton />
-              <Button onClick={() => handleDeleteChanges()} variant={"secondary"}>
-                Delete Changes
-              </Button>
+              <DeleteChangesButton />
             </div>
           )}
         </>
