@@ -1,12 +1,10 @@
-import { FC } from "react";
-
 interface ErrorBlockProps {
   title: string;
   message?: string;
   children: React.ReactNode;
 }
 
-const ErrorBlock: FC<ErrorBlockProps> = ({ title, message, children }) => {
+const ErrorBlock: React.FC<ErrorBlockProps> = ({ title, message, children }) => {
   return (
     <div className="text-center">
       <h2 className="mb-4 text-4xl font-extrabold">{title}</h2>

@@ -91,7 +91,7 @@ const SurveysNav: React.FC = () => {
   };
 
   return (
-    <ul className="flex flex-wrap gap-5 text-lg font-semibold uppercase md:flex-nowrap">
+    <ul className="flex flex-wrap gap-x-[20px] gap-y-[15px] text-lg font-semibold uppercase md:flex-nowrap">
       {selectedSurveyId &&
         surveyNavOptions.map((option) =>
           option.name === "share" ? (
@@ -108,7 +108,7 @@ const SurveysNav: React.FC = () => {
               style={{
                 pointerEvents: isButtonSelected(option.pathIncludes) ? "none" : "initial",
               }}
-              className="relative"
+              className="relative leading-[1.5em]"
             >
               {isButtonSelected(option.pathIncludes) && (
                 <span className="absolute bottom-[3px] left-1/2 h-[2px] w-[90%] -translate-x-1/2 rounded-[1px] bg-custom-black"></span>

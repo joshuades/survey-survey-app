@@ -55,7 +55,7 @@ export const DELETE = async (req: NextRequest, context: { params: { id: string }
     return Response.json({ error: "Please log in with the correct account." }, { status: 403 });
   }
   if (message === "not found") {
-    return Response.json({ error: "Something went wrong with DELETE" }, { status: 404 });
+    return Response.json({ error: "Questions to delete not found." }, { status: 404 });
   }
   return NextResponse.json(
     { questions, message: "Questions deleted successfully" },

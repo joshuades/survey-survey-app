@@ -84,12 +84,12 @@ export default function SurveyBuilder({
 
       {!isLoadingQuestions ? (
         <>
-          {checkForSurveyChanges(currentSurvey?.survey?.id || null, currentChanges) && (
-            <div className="relative mx-2 flex flex-wrap justify-between gap-[40px_5px]">
-              <SurveySubmitButton />
+          <div className="relative mx-2 flex flex-wrap justify-between gap-[40px_5px]">
+            <SurveySubmitButton />
+            {checkForSurveyChanges(currentSurvey?.survey?.id || null, currentChanges) && (
               <DeleteChangesButton />
-            </div>
-          )}
+            )}
+          </div>
         </>
       ) : (
         <div className="mx-2 flex justify-between gap-5">

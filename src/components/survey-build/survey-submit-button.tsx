@@ -101,7 +101,7 @@ const SurveySubmitButton: FunctionComponent = () => {
 
     if (!response.ok) {
       console.error("Failed to create survey, check api response: ", data);
-      setErrorMessage(`${data.error}`);
+      setErrorMessage(`ERROR: ${data.error}`);
       return;
     }
 
@@ -126,7 +126,7 @@ const SurveySubmitButton: FunctionComponent = () => {
 
     if (!response.ok) {
       console.error("Failed adding questions, check api response: ", data);
-      setErrorMessage(`${data.error}`);
+      setErrorMessage(`ERROR: ${data.error}`);
       return [];
     }
 
@@ -147,7 +147,7 @@ const SurveySubmitButton: FunctionComponent = () => {
 
     if (!response.ok) {
       console.error("Failed to delete survey, check api response: ", data);
-      setErrorMessage(`${data.error}`);
+      setErrorMessage(`ERROR: ${data.error}`);
       return [];
     }
 
@@ -183,7 +183,7 @@ const SurveySubmitButton: FunctionComponent = () => {
 
     if (!response.ok) {
       console.error("Failed to update questions, check api response: ", data);
-      setErrorMessage(`${data.error}`);
+      setErrorMessage(`ERROR: ${data.error}`);
       return false;
     }
 

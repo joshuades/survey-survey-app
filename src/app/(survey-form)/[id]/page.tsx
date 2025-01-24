@@ -1,4 +1,4 @@
-import ErrorBlock from "@/components/error-block";
+import ErrorBlock from "@/components/error/error-block";
 import { Button } from "@/components/ui/button";
 import { getSurveyById } from "@/db";
 import Link from "next/link";

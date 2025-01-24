@@ -8,7 +8,7 @@ import { CollectedAnswer, CollectedAnswerer, useStore } from "@/store/surveysSto
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import ErrorBlock from "../error-block";
+import ErrorBlock from "../error/error-block";
 import { Card, CardContent, CardHeader } from "../ui/card";
 
 export function SurveyForm({
