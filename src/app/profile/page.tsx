@@ -1,4 +1,5 @@
 import { SignIn } from "@/components/auth/auth-components";
+import ErrorBlock from "@/components/error/error-block";
 import FadeInWrapper from "@/components/fade-in-wrapper";
 import ProfileForm from "@/components/profile-form";
 import { getUserSettings } from "@/db";
@@ -8,7 +9,14 @@ export default async function ProfilePage() {
   const session = await auth();
   const profileSettings = await getUserSettings();
 
-  if (!session?.user) return <SignIn />;
+  if (!session?.user)
+    return (
+      <div className="pb-[5vh] pt-[15vh]">
+        <ErrorBlock title="Unauthenticated" message="You need to be signed in to view this page">
+          <SignIn />
+        </ErrorBlock>
+      </div>
+    );
 
   const profileData = {
     name: session.user.name ?? "",

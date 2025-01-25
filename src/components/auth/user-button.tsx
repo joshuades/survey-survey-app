@@ -38,7 +38,7 @@ export default async function UserButton() {
             </div>
           </DropdownMenuLabel>
           <DropdownMenuItem>
-            <SignOut />
+            <SignOut callbackUrl="/" variant={"secondary"} className="w-full p-0" />
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
