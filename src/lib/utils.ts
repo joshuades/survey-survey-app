@@ -1,3 +1,4 @@
+import { Question } from "@/db";
 import { type CollectedUpdate, type CurrentChanges } from "@/store/surveysStore";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -10,6 +11,31 @@ export const randomString = (length: number = 5) => {
   return Math.random().toString(36).substr(2, length);
 };
 
+/**
+ * Calculates a new index based on the current number of questions in the survey.
+ *
+ * @param {number} [i=0] An optional increment to add to the new index.
+ * @returns {number} The new index for the survey question.
+ */
+export const getNewQuestionIndex = (questions: Question[], i: number = 0) => {
+  return questions ? questions.length + i + 1 : i + 1;
+};
+
+/**
+ * Generates a temporary ID by concatenating a given prefix with a random number.
+ *
+ * @param {string} prefix The prefix to be used.
+ * @returns {number} The generated temporary ID.
+ */
+export const generateTmpId = (prefix: string) => {
+  return Number(prefix + Math.random().toString().slice(2));
+};
+
+/**
+ * Checks if there are any changes in the survey.
+ *
+ * @returns A boolean indicating whether there are any changes in the survey.
+ */
 export const checkForSurveyChanges = (
   currentSurveyId: number | null,
   currentChanges: CurrentChanges

@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Question } from "@/db";
-import { checkForSurveyChanges } from "@/lib/utils";
+import { checkForSurveyChanges, generateTmpId, getNewQuestionIndex } from "@/lib/utils";
 import { useMyLocalStore, useStore } from "@/store/surveysStore";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
@@ -18,12 +18,15 @@ export default function BuilderControlRow() {
 
   const { currentSurvey, setCurrentSurvey, currentChanges, setCurrentChanges } = useStore();
 
-  const getNewIndex = (i: number = 0) => {
-    return currentSurvey?.questions ? currentSurvey?.questions?.length + i + 1 : i + 1;
-  };
-
-  const generateTmpId = (prefix: string) => {
-    return Number(prefix + Math.random().toString().slice(2));
+  /**
+   * Adds questions to local storage, if user is not logged in.
+   *
+   * @param newQuestions Questions the user wants to add
+   */
+  const setQuestionsBackup = (newQuestions: Question[]) => {
+    if (!session?.user) {
+      setQuestionsLocal([...questionsLocal, ...newQuestions]);
+    }
   };
 
   const addQuestions = (questionTexts: string[]) => {
@@ -35,7 +38,7 @@ export default function BuilderControlRow() {
         surveyId: generateTmpId("9999"),
         questionText: text,
         answerType: "text",
-        index: getNewIndex(i),
+        index: getNewQuestionIndex(currentSurvey?.questions || [], i),
         status: "new",
         created_at: d,
         updated_at: null,
@@ -62,13 +65,7 @@ export default function BuilderControlRow() {
       ],
     });
 
-    // add questions to local storage
-    if (!session?.user) {
-      setQuestionsLocal([...questionsLocal, ...newQuestions]);
-      console.log("Added questions to local storage");
-    } else {
-      console.log("session.user exits:", session?.user);
-    }
+    setQuestionsBackup(newQuestions);
 
     setInputMessage("");
   };

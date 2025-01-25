@@ -1,9 +1,9 @@
 "use client";
 
-import { SurveyAndQuestions } from "@/db";
+import { Question, SurveyAndQuestions } from "@/db";
 import { checkForSurveyChanges } from "@/lib/utils";
 import { useLoadingStore } from "@/store/loadingStore";
-import { useMyLocalStore, useStore } from "@/store/surveysStore";
+import { QuestionPointer, useMyLocalStore, useStore } from "@/store/surveysStore";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import FadeInWrapper from "../fade-in-wrapper";
@@ -32,6 +32,26 @@ export default function SurveyBuilder({
   } = useStore();
 
   useEffect(() => {
+    setupBuilderState(surveyAndQuestions);
+    setIsLoadingQuestions(false);
+    setIsRouting(false);
+  }, []);
+
+  useEffect(() => {
+    const user_logged_in_with_new_questions =
+      !currentSurvey?.survey && session?.user && questionsLocal.length > 0;
+    if (user_logged_in_with_new_questions) {
+      transferQuestionsBackupToSurvey();
+    }
+  }, [isLoadingQuestions]);
+
+  /**
+   * Initializes the zustand state for the survey builder component.
+   *
+   * @param {SurveyAndQuestions} surveyAndQuestions The survey and its associated questions.
+   * @returns {void}
+   */
+  const setupBuilderState = (surveyAndQuestions: SurveyAndQuestions) => {
     if (surveyAndQuestions) {
       setCurrentSurvey(surveyAndQuestions);
     }
@@ -42,24 +62,34 @@ export default function SurveyBuilder({
       deletedQuestions: [],
       collectedUpdates: [],
     });
-    setIsLoadingQuestions(false);
-    setIsRouting(false);
-  }, []);
-
-  useEffect(() => {
-    // If user logs in and there are questions in local storage, transfer them to the current changes
-    if (!currentSurvey?.survey && session?.user && questionsLocal.length > 0) {
-      setCurrentSurvey({
-        survey: null,
-        questions: [...(currentSurvey?.questions || []), ...questionsLocal],
-      });
+    if (!session?.user || currentSurvey?.survey) {
       setQuestionsLocal([]);
     }
-  }, [isLoadingQuestions]);
+  };
 
-  useEffect(() => {
-    console.log("questionsLocal:", questionsLocal);
-  }, [questionsLocal]);
+  /**
+   * Transfers questions from the local state to the current survey and updates the current changes.
+   *
+   * @usecase New questions must have been added to local storage while the user was not logged in.
+   *
+   * @returns {void}
+   */
+  const transferQuestionsBackupToSurvey = () => {
+    setCurrentSurvey({
+      survey: null,
+      questions: [...(currentSurvey?.questions || []), ...questionsLocal],
+    });
+    setCurrentChanges({
+      ...currentChanges,
+      collectedQuestions: [
+        ...currentChanges.collectedQuestions,
+        ...questionsLocal.map((q: Question): QuestionPointer => {
+          return { questionId: q.id };
+        }),
+      ],
+    });
+    setQuestionsLocal([]);
+  };
 
   return (
     <div className="grid w-full gap-[60px]">
@@ -86,9 +116,10 @@ export default function SurveyBuilder({
         <>
           <div className="relative mx-2 flex flex-wrap justify-between gap-[40px_5px]">
             <SurveySubmitButton />
-            {checkForSurveyChanges(currentSurvey?.survey?.id || null, currentChanges) && (
-              <DeleteChangesButton />
-            )}
+            {currentSurvey?.survey &&
+              checkForSurveyChanges(currentSurvey?.survey?.id, currentChanges) && (
+                <DeleteChangesButton />
+              )}
           </div>
         </>
       ) : (

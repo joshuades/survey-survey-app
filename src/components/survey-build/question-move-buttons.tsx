@@ -2,11 +2,14 @@
 
 import { Question } from "@/db";
 import { setCollectedUpdates } from "@/lib/utils";
-import { useStore } from "@/store/surveysStore";
+import { useMyLocalStore, useStore } from "@/store/surveysStore";
+import { useSession } from "next-auth/react";
 import { Button } from "../ui/button";
 
 export default function QuestionMoveButtons({ question }: { question: Question }) {
   const { currentSurvey, setCurrentSurvey, currentChanges, setCurrentChanges } = useStore();
+  const { setQuestionsLocal } = useMyLocalStore();
+  const { data: session } = useSession();
 
   const handleUpdateIndex = (direction: "up" | "down", questionA: Question): void => {
     const allQuestions = [...(currentSurvey?.questions || [])];
@@ -41,6 +44,10 @@ export default function QuestionMoveButtons({ question }: { question: Question }
       survey: currentSurvey?.survey || null,
       questions: updatedQuestions,
     });
+
+    if (!session?.user) {
+      setQuestionsLocal(updatedQuestions);
+    }
 
     // save changes to state
     const newCollectedUpdates = [
