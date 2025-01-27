@@ -18,15 +18,14 @@ export function SurveyForm({
 }: {
   questionId: string;
   questions: Question[];
-  survey: { id: string; name: string };
+  survey: { id: string; accessLinkId: string; name: string };
 }) {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const { collectedAnswers, setCollectedAnswers, collectedAnswerer } = useStore();
   const router = useRouter();
 
-  const questionIds = [...questions.map((q) => q.id), 0];
-  questionIds.sort((a, b) => a - b);
+  const questionIds = [0, ...questions.sort((a, b) => a.index - b.index).map((q) => q.id)];
 
   questionId = questionId === "0" ? questionIds[1].toString() : questionId;
 
@@ -55,7 +54,7 @@ export function SurveyForm({
     setCollectedAnswers(allCollectedAnswers);
 
     if (currentIndex < questionIds.length - 1) {
-      router.push(`/${survey.id}/q/${questionIds[currentIndex + 1]}`);
+      router.push(`/${survey.accessLinkId}/q/${questionIds[currentIndex + 1]}`);
     } else {
       setIsLoading(true);
       const createSuccessful = await tryCreateAnswersInDb(
@@ -68,7 +67,7 @@ export function SurveyForm({
         setIsLoading(false);
         return;
       }
-      router.push(`/${survey.id}/complete`);
+      router.push(`/${survey.accessLinkId}/complete`);
       setIsLoading(false);
     }
   };
@@ -99,7 +98,7 @@ export function SurveyForm({
     return (
       <ErrorBlock title="Question not found" message="Something went wrong, please try again.">
         <Button asChild>
-          <Link href={`/${survey.id}`}>Start Over</Link>
+          <Link href={`/${survey.accessLinkId}`}>Start Over</Link>
         </Button>
       </ErrorBlock>
     );
@@ -136,7 +135,9 @@ export function SurveyForm({
             {currentIndex > 1 && (
               <Button
                 type="button"
-                onClick={() => router.push(`/${survey.id}/q/${questionIds[currentIndex - 1]}`)}
+                onClick={() =>
+                  router.push(`/${survey.accessLinkId}/q/${questionIds[currentIndex - 1]}`)
+                }
               >
                 Previous
               </Button>

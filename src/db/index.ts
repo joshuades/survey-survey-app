@@ -3,6 +3,7 @@ import { CollectedAnswer, CollectedAnswerer } from "@/store/surveysStore";
 import { sql as vercelSql } from "@vercel/postgres";
 import { and, desc, eq, inArray, sql } from "drizzle-orm";
 
+import { generateAccessLinkId } from "@/lib/utils";
 import { drizzle } from "drizzle-orm/vercel-postgres";
 import {
   answerer as answererTable,
@@ -21,6 +22,9 @@ export type Survey = {
   name: string;
   answersCount: number;
   userId: string;
+  status: string;
+  accessLinkId: string;
+  linkUpdatedAt: Date | null;
   updated_at: Date | null;
   created_at: Date;
   deleted_at: Date | null;
@@ -73,7 +77,7 @@ export async function createSurvey(name: string, questions: Question[]) {
 
   const survey = await db
     .insert(surveyTable)
-    .values({ name, userId: session?.user?.id })
+    .values({ name, userId: session?.user?.id, accessLinkId: generateAccessLinkId() })
     .returning();
   if (!survey || survey.length == 0) return { survey, message: "internal error" };
 
@@ -106,7 +110,11 @@ export async function getSurveys() {
   return { surveys, message: "success" };
 }
 
-export async function getSurveyById(id: number, alreadyAuthorized: boolean = false) {
+export async function getSurveyById(
+  id: number | string,
+  alreadyAuthorized: boolean = false,
+  usingAccessLinkId: boolean = false
+) {
   if (!alreadyAuthorized) {
     const session = await auth();
     if (!session?.user?.id) return { survey: null, message: "unauthenticated" };
@@ -116,7 +124,11 @@ export async function getSurveyById(id: number, alreadyAuthorized: boolean = fal
   const survey = await db
     .select()
     .from(surveyTable)
-    .where(eq(surveyTable.id, id))
+    .where(
+      usingAccessLinkId
+        ? eq(surveyTable.accessLinkId, id.toString())
+        : eq(surveyTable.id, Number(id))
+    )
     .leftJoin(questionTable, eq(surveyTable.id, questionTable.surveyId))
     .leftJoin(userTable, eq(surveyTable.userId, userTable.id));
 
@@ -221,17 +233,32 @@ export async function getFullSurveyById(id: number) {
   };
 }
 
-export async function updateSurvey(id: number, name: string) {
+export async function updateSurvey(patchUpdate: PatchUpdate, surveyId: number) {
   const session = await auth();
-  if (!session?.user?.id) return { survey: null, message: "unauthenticated" };
+  if (!session?.user) return { message: "unauthenticated" };
+  if (!(await isAuthorized(surveyId, session?.user))) {
+    return { message: "unauthorized" };
+  }
+  if (!patchUpdate) {
+    return { message: "internal error" };
+  }
 
-  const survey = await db
-    .update(surveyTable)
-    .set({ name })
-    .where(and(eq(surveyTable.id, id), eq(surveyTable.userId, session?.user?.id)))
-    .returning();
-  if (!survey || survey.length == 0) return { survey, message: "not found" };
-  return { survey, message: "success" };
+  if (patchUpdate.hasOwnProperty("accessLinkId")) {
+    const survey = await db
+      .update(surveyTable)
+      .set({
+        accessLinkId: generateAccessLinkId(),
+        updated_at: new Date(),
+        linkUpdatedAt: new Date(),
+      })
+      .where(eq(surveyTable.id, surveyId))
+      .returning();
+
+    if (!survey || survey.length == 0) return { message: "not found" };
+
+    return { survey: survey[0], message: "success" };
+  }
+  return { message: "internal error" };
 }
 
 export async function deleteSurvey(id: number) {

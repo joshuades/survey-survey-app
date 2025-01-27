@@ -210,18 +210,25 @@ const SurveySubmitButton: FunctionComponent = () => {
 
   return (
     <div className="flex flex-wrap gap-3">
-      {!session?.user?.email ? (
+      {!session?.user ? (
         <Button disabled>SAVE & SHARE</Button>
       ) : (
-        <Button
-          variant="huge"
-          onClick={() => handleSubmit()}
-          disabled={
-            !checkForSurveyChanges(currentSurvey?.survey?.id || null, currentChanges) || isLoading
-          }
-        >
-          {currentSurvey?.survey ? "SAVE CHANGES" : "SAVE NEW SURVEY"}
-        </Button>
+        currentSurvey?.questions &&
+        currentSurvey?.questions?.length > 0 && (
+          <Button
+            variant={
+              checkForSurveyChanges(currentSurvey?.survey?.id || null, currentChanges)
+                ? "huge"
+                : "default"
+            }
+            onClick={() => handleSubmit()}
+            disabled={
+              !checkForSurveyChanges(currentSurvey?.survey?.id || null, currentChanges) || isLoading
+            }
+          >
+            {currentSurvey?.survey ? "SAVE CHANGES" : "SAVE NEW SURVEY"}
+          </Button>
+        )
       )}
       {!session?.user?.email && <div> (Sign in to save your survey)</div>}
       {errorMessage && (

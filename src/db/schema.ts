@@ -15,6 +15,8 @@ export const survey = pgTable("survey", {
   name: varchar({ length: 255 }).notNull(),
   answersCount: integer("answersCount").notNull().default(0),
   status: varchar({ length: 50 }).notNull().default("active"), // inactive, active
+  accessLinkId: varchar({ length: 30 }).notNull().unique(),
+  linkUpdatedAt: timestamp(),
   userId: text("userId")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),

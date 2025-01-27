@@ -12,6 +12,34 @@ export const randomString = (length: number = 5) => {
 };
 
 /**
+ * Generates a unique access link ID based on the current date and time.
+ *
+ * The format of the generated ID is `0MMxx-0DDxx-0SSxx`.
+ *
+ * @returns {string} A unique access link ID.
+ */
+export const generateAccessLinkId = () => {
+  const d = new Date();
+  d.setMonth(d.getMonth() + 1);
+  return `0${d.getMonth()}${randomString(2)}-0${d.getDate()}${randomString(2)}-0${d.getSeconds()}${randomString(2)}`;
+};
+
+/**
+ * Generates a formatted date string based on the provided date object and style.
+ *
+ * @returns A formatted date string.
+ */
+export const makeDateString = (date: Date, style: string = "short") => {
+  switch (style) {
+    case "short":
+      return (
+        date.toLocaleString("en-US", { day: "numeric" }) +
+        ". " +
+        date.toLocaleString("en-US", { month: "short" })
+      );
+  }
+};
+/**
  * Calculates a new index based on the current number of questions in the survey.
  *
  * @param {number} [i=0] An optional increment to add to the new index.

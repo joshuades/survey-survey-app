@@ -6,10 +6,9 @@ export default async function AnswerQuestionPage({
 }: {
   params: Promise<{ id: string; qid: string }>;
 }) {
-  const surveyId = (await params).id;
+  const accessLinkId = (await params).id;
   const questionId = (await params).qid;
-
-  const { survey } = await getSurveyById(Number(surveyId), true);
+  const { survey } = await getSurveyById(accessLinkId, true, true);
 
   if (!survey) {
     console.error("Survey not found:", survey);
@@ -18,7 +17,8 @@ export default async function AnswerQuestionPage({
   const questions = survey.questions;
 
   const minfiedSurvey = {
-    id: surveyId,
+    id: survey.id.toString(),
+    accessLinkId: survey.accessLinkId,
     name: survey.name,
   };
 
