@@ -1,11 +1,8 @@
 "use client";
 
-import { springTransition } from "@/lib/utils";
 import { useStore } from "@/store/surveysStore";
-import { motion } from "framer-motion";
 import { FC, useMemo } from "react";
-import QuestionDeleteButton from "./question-delete-button";
-import QuestionMoveButtons from "./question-move-buttons";
+import BuilderQuestion from "./builder-question";
 
 interface QuestionsProps {
   sortOrder: "ASC" | "DESC";
@@ -33,27 +30,8 @@ const Questions: FC<QuestionsProps> = ({ sortOrder }) => {
 
   return (
     <ul className="mx-2 flex flex-col gap-[25px] text-[32px] font-light">
-      {sortedQuestions.map((question, i) => (
-        <motion.li
-          layout
-          transition={springTransition}
-          key={question.id}
-          className="grid grid-cols-[auto,_min-content] gap-2"
-        >
-          <div className="relative grid gap-[5px]">
-            <div className="pr-[25px] pt-[12px] text-[18px] font-bold leading-none md:absolute md:-translate-x-full">
-              {sortOrder === "ASC" ? i + 1 : sortedQuestions.length - i}.
-            </div>
-            {question.questionText}{" "}
-            {["new"].includes(question.status) && (
-              <span className="text-sm font-semibold uppercase">{question.status}</span>
-            )}
-          </div>
-          <div className="flex flex-col justify-end gap-[15px] pb-[10px]">
-            <QuestionMoveButtons question={question} />
-            <QuestionDeleteButton question={question} />
-          </div>
-        </motion.li>
+      {sortedQuestions.map((question) => (
+        <BuilderQuestion question={question} key={question.id} />
       ))}
     </ul>
   );

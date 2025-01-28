@@ -4,16 +4,14 @@ import { Question } from "@/db";
 import React from "react";
 import { Button } from "../ui/button";
 
-export default function QuestionItem({
+export default function ResultsQuestion({
   question,
-  i,
   children,
 }: {
   question: Question;
-  i: number;
   children: React.ReactNode;
 }) {
-  const [isOpen, setIsOpen] = React.useState(i == 0 ? true : false);
+  const [isOpen, setIsOpen] = React.useState(question.index == 1 ? true : false);
 
   return (
     <li>
@@ -23,7 +21,7 @@ export default function QuestionItem({
       >
         <div className="relative grid gap-[5px]">
           <div className="pr-[25px] pt-[10px] text-[18px] font-bold leading-none md:absolute md:-translate-x-full">
-            {i + 1}.
+            {question.index}.
           </div>
           <div className="text-[26px] font-light">{question.questionText}</div>
         </div>
