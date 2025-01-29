@@ -3,6 +3,8 @@ import { type CollectedUpdate, type CurrentChanges } from "@/store/surveysStore"
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
+export const SCREENS = { xs: 415, sm: 640, md: 768, lg: 1024, xl: 1280, "2xl": 1536, "4xl": 2400 };
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }

@@ -1,24 +1,29 @@
 "use client";
 
 import { type Question } from "@/db";
-import { springTransition } from "@/lib/utils";
-import { Reorder } from "framer-motion";
+import MovingQuestionWrapper from "./moving-question-wrapper";
 import QuestionDeleteButton from "./question-delete-button";
 import QuestionMoveButtons from "./question-move-buttons";
 
 interface BuilderQuestionProps {
   question: Question;
   onMoveQuestionClick: (direction: "up" | "down", question: Question) => void;
+  dndOn: boolean;
 }
 
-const BuilderQuestion: React.FC<BuilderQuestionProps> = ({ question, onMoveQuestionClick }) => {
+const BuilderQuestion: React.FC<BuilderQuestionProps> = ({
+  question,
+  onMoveQuestionClick,
+  dndOn,
+}) => {
+  const className = "grid grid-cols-[auto,_min-content] gap-2";
+
   return (
-    <Reorder.Item
+    <MovingQuestionWrapper
+      className={className}
       key={question.id}
-      value={question}
-      layout
-      transition={springTransition}
-      className="grid grid-cols-[auto,_min-content] gap-2"
+      dndOn={dndOn}
+      reorderValue={question}
     >
       <div className="relative grid gap-[5px]">
         <div className="pr-[25px] pt-[12px] text-[18px] font-bold leading-none md:absolute md:-translate-x-full">
@@ -33,7 +38,7 @@ const BuilderQuestion: React.FC<BuilderQuestionProps> = ({ question, onMoveQuest
         <QuestionMoveButtons question={question} onMoveQuestionClick={onMoveQuestionClick} />
         <QuestionDeleteButton question={question} />
       </div>
-    </Reorder.Item>
+    </MovingQuestionWrapper>
   );
 };
 

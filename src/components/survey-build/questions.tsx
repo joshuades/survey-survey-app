@@ -1,12 +1,13 @@
 "use client";
 
-import { Question } from "@/db";
-import { setCollectedUpdates, sortQuestionsByIndex } from "@/lib/utils";
+import { type Question } from "@/db";
+import useWindowSize from "@/lib/hooks";
+import { SCREENS, setCollectedUpdates, sortQuestionsByIndex } from "@/lib/utils";
 import { useMyLocalStore, useStore } from "@/store/surveysStore";
-import { Reorder } from "framer-motion";
 import { useSession } from "next-auth/react";
 import { FC } from "react";
 import BuilderQuestion from "./builder-question";
+import MovingQuestionsWrapper from "./moving-questions-wrapper";
 
 interface QuestionsProps {
   sortOrder: "ASC" | "DESC";
@@ -16,6 +17,9 @@ const Questions: FC<QuestionsProps> = ({ sortOrder }) => {
   const { currentSurvey, setCurrentSurvey, currentChanges, setCurrentChanges } = useStore();
   const { setQuestionsLocal } = useMyLocalStore();
   const { data: session } = useSession();
+
+  const size = useWindowSize();
+  const dndOn = size.width ? size?.width >= SCREENS.lg : false;
 
   const questions = sortQuestionsByIndex([...(currentSurvey?.questions || [])], sortOrder);
 
@@ -130,10 +134,10 @@ const Questions: FC<QuestionsProps> = ({ sortOrder }) => {
   };
 
   return (
-    <Reorder.Group
-      as="ul"
-      values={questions}
+    <MovingQuestionsWrapper
+      reorderValues={questions}
       onReorder={setQuestionsOnReorder}
+      dndOn={dndOn}
       className="mx-2 flex flex-col gap-[25px] text-[32px] font-light"
     >
       {questions.map((question) => (
@@ -141,9 +145,10 @@ const Questions: FC<QuestionsProps> = ({ sortOrder }) => {
           question={question}
           key={question.id}
           onMoveQuestionClick={onMoveQuestionClick}
+          dndOn={dndOn}
         />
       ))}
-    </Reorder.Group>
+    </MovingQuestionsWrapper>
   );
 };
 
