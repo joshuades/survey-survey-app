@@ -2,17 +2,20 @@
 
 import { type Question } from "@/db";
 import { springTransition } from "@/lib/utils";
-import { motion } from "framer-motion";
+import { Reorder } from "framer-motion";
 import QuestionDeleteButton from "./question-delete-button";
 import QuestionMoveButtons from "./question-move-buttons";
 
 interface BuilderQuestionProps {
   question: Question;
+  onMoveQuestionClick: (direction: "up" | "down", question: Question) => void;
 }
 
-const BuilderQuestion: React.FC<BuilderQuestionProps> = ({ question }) => {
+const BuilderQuestion: React.FC<BuilderQuestionProps> = ({ question, onMoveQuestionClick }) => {
   return (
-    <motion.li
+    <Reorder.Item
+      key={question.id}
+      value={question}
       layout
       transition={springTransition}
       className="grid grid-cols-[auto,_min-content] gap-2"
@@ -27,10 +30,10 @@ const BuilderQuestion: React.FC<BuilderQuestionProps> = ({ question }) => {
         )}
       </div>
       <div className="flex flex-col justify-end gap-[15px] pb-[10px]">
-        <QuestionMoveButtons question={question} />
+        <QuestionMoveButtons question={question} onMoveQuestionClick={onMoveQuestionClick} />
         <QuestionDeleteButton question={question} />
       </div>
-    </motion.li>
+    </Reorder.Item>
   );
 };
 

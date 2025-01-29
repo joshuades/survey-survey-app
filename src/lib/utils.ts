@@ -114,6 +114,26 @@ export const setCollectedUpdates = (
   return collectedUpdates;
 };
 
+/**
+ * Sorts an array of questions by their index and, if indexes are the same, by their creation date.
+ *
+ * @param sortOrder "ASC" or "DESC". The order in which to sort the questions.
+ * @returns The sorted array of questions.
+ */
+export const sortQuestionsByIndex = (questions: Question[], sortOrder: string) => {
+  return questions.sort((a, b) => {
+    const primaryComparison = sortOrder === "ASC" ? a.index - b.index : b.index - a.index;
+    if (primaryComparison !== 0) {
+      return primaryComparison;
+    }
+    // If indexes are the same, sort by created_at
+    const dateA = new Date(a.created_at).getTime();
+    const dateB = new Date(b.created_at).getTime();
+
+    return sortOrder === "ASC" ? dateA - dateB : dateB - dateA;
+  });
+};
+
 /* ******* ANIMATIONS ******* */
 
 export const springTransition = {

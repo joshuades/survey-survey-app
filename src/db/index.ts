@@ -105,7 +105,7 @@ export async function getSurveys() {
     .select()
     .from(surveyTable)
     .where(eq(surveyTable.userId, session?.user?.id))
-    .orderBy(desc(surveyTable.updated_at), desc(surveyTable.created_at));
+    .orderBy(desc(surveyTable.created_at));
 
   return { surveys, message: "success" };
 }
