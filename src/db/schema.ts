@@ -111,3 +111,12 @@ export const authenticators = pgTable(
     }),
   })
 );
+
+export const tutorialVideos = pgTable("tutorialVideo", {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  name: text("name").default("").notNull(),
+  muxPlaybackId: text("muxPlaybackId").notNull(),
+  aspectRatio: text("aspectRatio").notNull(), // 16:9, 4:3
+  screenSize: text("screenSize").default("desktop").notNull(), // desktop, mobile
+  active: boolean("active").default(true).notNull(),
+});

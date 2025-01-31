@@ -10,6 +10,7 @@ import {
   answer as answerTable,
   question as questionTable,
   survey as surveyTable,
+  tutorialVideos as tutorialVideosTable,
   users as userTable,
 } from "./schema";
 
@@ -67,6 +68,15 @@ export interface Answerer extends CollectedAnswerer {
 export interface PatchUpdate {
   id: number;
   [key: string]: string | number;
+}
+
+export interface TutorialVideoInfo {
+  id: number;
+  name: string;
+  muxPlaybackId: string;
+  aspectRatio: string;
+  screenSize: string;
+  active: boolean;
 }
 
 // SURVEY FUNCTIONS
@@ -539,6 +549,39 @@ export async function updateUser(username: string, thankYouMessage: string) {
   }
 
   return { user: { name: updateResult[0].name, thankYouMessage }, message: "success" };
+}
+
+// VIDEO INFOS FUNCTIONS
+
+export async function getVideoInfos(name: string): Promise<{
+  videoInfos: { desktop: TutorialVideoInfo; mobile: TutorialVideoInfo } | null;
+  message: string;
+}> {
+  const videoInfos = await db
+    .select()
+    .from(tutorialVideosTable)
+    .where(eq(tutorialVideosTable.name, name));
+
+  if (!videoInfos || videoInfos.length == 0) {
+    return { videoInfos: null, message: "not found" };
+  }
+
+  const adaptedVideoInfos = videoInfos.reduce<{
+    desktop: TutorialVideoInfo;
+    mobile: TutorialVideoInfo;
+  }>(
+    (acc, row) => {
+      if (row.screenSize === "desktop") {
+        acc.desktop = row;
+      } else {
+        acc.mobile = row;
+      }
+      return acc;
+    },
+    { desktop: videoInfos[0], mobile: videoInfos[0] }
+  );
+
+  return { videoInfos: adaptedVideoInfos, message: "success" };
 }
 
 // HELPER FUNCTIONS

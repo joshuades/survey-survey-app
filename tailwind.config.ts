@@ -8,7 +8,6 @@ const config: Config = {
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
-    colors: {},
     screens: {
       sm: "480px",
       md: "768px",

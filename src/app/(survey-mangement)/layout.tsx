@@ -4,6 +4,8 @@ import MainNavBox from "@/components/navigation/main-nav-box";
 import Surveys from "@/components/navigation/surveys";
 import SurveysNav from "@/components/navigation/surveys-nav";
 import SurveysWrapper from "@/components/navigation/surveys-wrapper";
+import TutorialVideoAlert from "@/components/tutorial-video-alert";
+import { getVideoInfos } from "@/db";
 import React from "react";
 
 export default async function SurveyManagementLayout({
@@ -11,6 +13,10 @@ export default async function SurveyManagementLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const { videoInfos: videoInfosA, message } = await getVideoInfos("a");
+
+  if (message !== "success" || videoInfosA == null) return null;
+
   return (
     <div className="grid min-h-screen grid-rows-[max-content] justify-center">
       <div className="flex w-[100vw] max-w-[98vw] flex-col gap-[90px] pt-[90px] md:max-w-[600px] xl:w-[800px] xl:max-w-[800px]">
@@ -28,6 +34,7 @@ export default async function SurveyManagementLayout({
           </div>
         </MainNavBox>
       </div>
+      <TutorialVideoAlert videoInfos={videoInfosA} />
       <Footer />
     </div>
   );

@@ -9,6 +9,7 @@ const alertVariants = cva(
     variants: {
       variant: {
         default: "bg-background text-foreground",
+        popover: "text-white fixed bottom-[30px] left-[5vw] w-fit max-w-[90vw] bg-custom-black",
         text: "p-0 border-none bg-transparent text-custom-warning",
         warning:
           "border-custom-warning text-custom-warning [&>svg]:text-custom-warning p-3 bg-custom-warning/5 rounded-[2px] border-dashed",
