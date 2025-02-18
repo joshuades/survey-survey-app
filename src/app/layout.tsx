@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth";
+import { Analytics } from "@vercel/analytics/react";
 import type { Metadata } from "next";
 import { SessionProvider } from "next-auth/react";
 import localFont from "next/font/local";
@@ -47,6 +48,7 @@ export default async function RootLayout({
             <main className="flex-grow">{children}</main>
           </div>
         </SessionProvider>
+        <Analytics />
       </body>
     </html>
   );
