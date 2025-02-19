@@ -1,3 +1,4 @@
+import SurveyCreatedAlert from "@/components/alert/survey-created-alert";
 import SurveyErrorBlock from "@/components/error/survey-error-block";
 import MainHeadline from "@/components/main-headline";
 import SurveyBuilder from "@/components/survey-build/survey-builder";
@@ -15,7 +16,10 @@ export default async function BuilderPage({ params }: { params: Promise<{ id: st
         Survey <span className="uppercase">{surveyAndQuestions!.survey.name}</span>
       </MainHeadline>
 
-      <SurveyBuilder surveyAndQuestions={surveyAndQuestions!} />
+      <div>
+        <SurveyBuilder surveyAndQuestions={surveyAndQuestions!} />
+        <SurveyCreatedAlert survey={surveyAndQuestions!.survey} />
+      </div>
     </>
   );
 }

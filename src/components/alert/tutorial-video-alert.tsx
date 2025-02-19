@@ -18,7 +18,7 @@ import { X } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
-import FadeInWrapper from "./fade-in-wrapper";
+import FadeInWrapper from "../fade-in-wrapper";
 
 const TutorialVideoAlert = ({
   videoInfos,
@@ -78,7 +78,7 @@ const TutorialVideoAlert = ({
         </AlertDescription>
         <button
           onClick={() => setIsVisible(false)}
-          className="text-gray-300 hover:text-white absolute right-[14px] top-[14px] transition-colors duration-200"
+          className="absolute right-[14px] top-[14px] text-gray-300 transition-colors duration-200 hover:text-white"
           aria-label="Close alert"
         >
           <X size={20} />

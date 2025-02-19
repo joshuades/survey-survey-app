@@ -25,7 +25,7 @@ const BuilderQuestion: React.FC<BuilderQuestionProps> = ({
       dndOn={dndOn}
       reorderValue={question}
     >
-      <div className="relative grid gap-[5px]">
+      <div className="relative grid cursor-grab gap-[5px]">
         <div className="pr-[25px] pt-[12px] text-[18px] font-bold leading-none md:absolute md:-translate-x-full">
           {question.index}.
         </div>
