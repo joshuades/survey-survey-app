@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth";
+import * as Sentry from "@sentry/nextjs";
 import { Analytics } from "@vercel/analytics/react";
 import type { Metadata } from "next";
 import { SessionProvider } from "next-auth/react";
@@ -14,10 +15,15 @@ const supreme = localFont({
   adjustFontFallback: false,
 });
 
-export const metadata: Metadata = {
-  title: "SurveySurvey",
-  description: "SurveySurvey is your go-to survey platform for all your special survey needs.",
-};
+export function generateMetadata(): Metadata {
+  return {
+    title: "SurveySurvey",
+    description: "SurveySurvey is your go-to survey platform for all your special survey needs.",
+    other: {
+      ...Sentry.getTraceData(),
+    },
+  };
+}
 
 export default async function RootLayout({
   children,

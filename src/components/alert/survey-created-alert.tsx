@@ -25,7 +25,7 @@ const SurveyCreatedAlert = ({ survey }: { survey: Survey }) => {
           <Alert variant={"popover"}>
             <AlertTitle>
               Created Survey <span className="uppercase">&quot;{survey.name}&quot;</span>{" "}
-              Successfuly!
+              Successfully!
             </AlertTitle>
             <AlertDescription></AlertDescription>
           </Alert>
