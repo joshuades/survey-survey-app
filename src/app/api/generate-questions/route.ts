@@ -18,6 +18,7 @@ const promptSystem = `Generate three unique survey questions based on the given 
 
   - Each question should be on a separate line.
   - The text should be plain, with no symbols, numbers or bullet points before the questions.
+  - Each question should have a "?" symbol at the end indicating it is a question.
 
   # Notes
 
@@ -32,7 +33,7 @@ export async function POST(req: Request) {
 
   try {
     const completion = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
+      model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
