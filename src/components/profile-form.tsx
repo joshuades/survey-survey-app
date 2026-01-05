@@ -44,7 +44,7 @@ function ProfileForm({ profileData }: { profileData: ProfileData }) {
   }, [state.result]);
 
   return (
-    <form action={dispatch} className="w-full max-w-md space-y-8">
+    <form action={dispatch} className="relative w-full max-w-md space-y-8">
       <div className="space-y-2">
         <Label htmlFor="username">Username</Label>
         <Input
@@ -88,7 +88,7 @@ function ProfileForm({ profileData }: { profileData: ProfileData }) {
             thankYouInput !== profileData.thankYouMessage) && <Button type="submit">Update</Button>}
         </div>
         {state.message && (
-          <Alert variant={state.errors ? "warning" : "text"} className="absolute w-fit">
+          <Alert variant={state.errors ? "warning" : "text"}>
             <AlertDescription>{state.message}</AlertDescription>
           </Alert>
         )}

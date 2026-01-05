@@ -551,6 +551,36 @@ export async function updateUser(username: string, thankYouMessage: string) {
   return { user: { name: updateResult[0].name, thankYouMessage }, message: "success" };
 }
 
+export async function deleteUser(userId: string) {
+  const session = await auth();
+  if (!session?.user?.id) return { message: "unauthenticated" };
+  if (session?.user?.id !== userId) return { message: "unauthorized" };
+
+  const deleteResult = await db.transaction(async (tx) => {
+    // Lock the user row to prevent concurrent deletes/updates
+    const userToDelete = await tx
+      .select()
+      .from(userTable)
+      .where(eq(userTable.id, userId))
+      .for("update");
+
+    if (!userToDelete || userToDelete.length === 0) {
+      return [];
+    }
+
+    const result = await tx.delete(userTable).where(eq(userTable.id, userId)).returning();
+    // add more operations here if needed
+
+    return result;
+  });
+
+  if (!deleteResult || deleteResult.length == 0) {
+    return { message: "user not found" };
+  }
+
+  return { message: "success" };
+}
+
 // VIDEO INFOS FUNCTIONS
 
 export async function getVideoInfos(name: string): Promise<{

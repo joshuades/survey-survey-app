@@ -2,8 +2,12 @@ import { SignIn } from "@/components/auth/auth-components";
 import ErrorBlock from "@/components/error/error-block";
 import FadeInWrapper from "@/components/fade-in-wrapper";
 import ProfileForm from "@/components/profile-form";
+import UserDeleteButton from "@/components/survey-build/user-delete-button";
+import { Button } from "@/components/ui/button";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { getUserSettings } from "@/db";
 import { auth } from "@/lib/auth";
+import { ChevronsUpDown } from "lucide-react";
 
 export default async function ProfilePage() {
   const session = await auth();
@@ -26,12 +30,26 @@ export default async function ProfilePage() {
   };
 
   return (
-    <div className="flex h-full min-h-screen flex-col items-center justify-center">
-      <div className="w-full max-w-[300px] text-start">
-        <FadeInWrapper>
-          <h2 className="mb-7 text-4xl font-extrabold">Profile Settings</h2>
-          <ProfileForm profileData={profileData} />
-        </FadeInWrapper>
+    <div className="flex min-h-screen flex-col items-center">
+      <div className="w-full max-w-[300px]">
+        <div className="relative flex h-[100svh] flex-col justify-between pt-[25vh]">
+          <FadeInWrapper>
+            <h2 className="mb-7 text-4xl font-extrabold">Profile Settings</h2>
+            <ProfileForm profileData={profileData} />
+          </FadeInWrapper>
+          <Collapsible className="mt-16 pb-4 lg:mt-8 lg:pb-5">
+            <FadeInWrapper>
+              <CollapsibleTrigger asChild className="data-[state=open]:">
+                <Button variant="secondary">
+                  Advanced Settings <ChevronsUpDown />
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="pt-3">
+                <UserDeleteButton />
+              </CollapsibleContent>
+            </FadeInWrapper>
+          </Collapsible>
+        </div>
       </div>
     </div>
   );
