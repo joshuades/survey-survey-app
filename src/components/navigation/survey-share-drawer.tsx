@@ -8,6 +8,7 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
+import { reportClientProblem } from "@/lib/sentry-report";
 import { makeDateString } from "@/lib/utils";
 import { useStore } from "@/store/surveysStore";
 import { AnimatePresence } from "framer-motion";
@@ -42,18 +43,35 @@ const SurveyShareDrawer = ({
 
   const tryUpdateAccessLink = async (surveyId: number) => {
     const patchUpdate = { id: surveyId, accessLinkId: "new" };
-    const response = await fetch(`/api/surveys/${surveyId}/`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ patchUpdate }),
-    });
+    let response: Response;
+    try {
+      response = await fetch(`/api/surveys/${surveyId}/`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ patchUpdate }),
+      });
+    } catch (error) {
+      console.error("Failed to update access link:", error);
+      reportClientProblem(error, {
+        area: "survey-persistence",
+        operation: "updateSurvey",
+        tags: { failure: "database" },
+        fingerprint: ["survey-persistence", "updateSurvey"],
+      });
+      return null;
+    }
     const data = await response.json();
 
     if (!response.ok) {
       console.error("Failed to update access link, check api response: ", data);
-      // TODO: show error message "ERROR: Failed to update access link"
+      reportClientProblem(new Error("Survey persistence failed during updateSurvey"), {
+        area: "survey-persistence",
+        operation: "updateSurvey",
+        tags: { failure: "database", http_status: String(response.status) },
+        fingerprint: ["survey-persistence", "updateSurvey"],
+      });
       return null;
     }
 

@@ -1,3 +1,4 @@
+import { reportServerProblem } from "@/lib/sentry-report";
 import NextAuth from "next-auth";
 import "next-auth/jwt";
 
@@ -10,6 +11,17 @@ const db = drizzle({ client: sql, casing: "snake_case" });
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   debug: !!process.env.AUTH_DEBUG,
+  logger: {
+    error(error) {
+      console.error("[auth]", error);
+      void reportServerProblem(error, {
+        area: "auth",
+        operation: "authjs",
+        tags: { failure: "authjs" },
+        fingerprint: ["authjs-error"],
+      });
+    },
+  },
   theme: { logo: "https://authjs.dev/img/logo-sm.png" },
   adapter: DrizzleAdapter(db),
   providers: [

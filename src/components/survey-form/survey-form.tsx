@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Question } from "@/db";
+import { reportClientProblem } from "@/lib/sentry-report";
 import { CollectedAnswer, CollectedAnswerer, useStore } from "@/store/surveysStore";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -77,17 +78,35 @@ export function SurveyForm({
     collectedAnswers: CollectedAnswer[],
     collectedAnswerer: CollectedAnswerer
   ) => {
-    const response = await fetch(`/api/surveys/${surveyId}/answers/`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ collectedAnswers, collectedAnswerer }),
-    });
+    let response: Response;
+    try {
+      response = await fetch(`/api/surveys/${surveyId}/answers/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ collectedAnswers, collectedAnswerer }),
+      });
+    } catch (error) {
+      console.error("Failed creating answers:", error);
+      reportClientProblem(error, {
+        area: "answer-submission",
+        operation: "createAnswers",
+        tags: { failure: "database" },
+        fingerprint: ["answer-submission", "createAnswers"],
+      });
+      return false;
+    }
     const data = await response.json();
 
     if (!response.ok) {
       console.error("Failed creating answers, check api response: ", data);
+      reportClientProblem(new Error("Answer submission failed"), {
+        area: "answer-submission",
+        operation: "createAnswers",
+        tags: { failure: "database", http_status: String(response.status) },
+        fingerprint: ["answer-submission", "createAnswers"],
+      });
       return false;
     }
 

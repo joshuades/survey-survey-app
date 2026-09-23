@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Question } from "@/db";
+import { openaiCallFailed, reportClientProblem } from "@/lib/sentry-report";
 import { checkForSurveyChanges, generateTmpId, getNewQuestionIndex } from "@/lib/utils";
 import { useMyLocalStore, useStore } from "@/store/surveysStore";
 import { useSession } from "next-auth/react";
@@ -50,8 +51,8 @@ export default function BuilderControlRow() {
       ...currentSurvey,
       survey: currentSurvey?.survey
         ? {
-            ...currentSurvey?.survey,
-          }
+          ...currentSurvey?.survey,
+        }
         : null,
       questions: [...(currentSurvey?.questions || []), ...newQuestions],
     });
@@ -79,6 +80,18 @@ export default function BuilderControlRow() {
     setCurrentInput("");
   };
 
+  const reportGenerateFailure = (cause?: unknown, status?: number) => {
+    reportClientProblem(openaiCallFailed(cause), {
+      area: "generate-questions",
+      operation: "openai.chat.completions",
+      tags: {
+        failure: "openai",
+        ...(status != null ? { http_status: String(status) } : {}),
+      },
+      fingerprint: ["openai-call-failed"],
+    });
+  };
+
   const handleGenerateQuestions = async () => {
     if (!currentInput.trim()) {
       setInputMessage("Type something above to generate questions!");
@@ -94,12 +107,19 @@ export default function BuilderControlRow() {
       });
       const data = await response.json();
       if (!response.ok) {
+        reportGenerateFailure(undefined, response.status);
         setInputMessage("Please try again another time.");
         return;
       }
-      if (data.questionTexts) addQuestions(data.questionTexts);
+      if (!Array.isArray(data.questionTexts) || data.questionTexts.length === 0) {
+        reportGenerateFailure(new Error("empty completion"), response.status);
+        setInputMessage("Please try again another time.");
+        return;
+      }
+      addQuestions(data.questionTexts);
     } catch (error) {
       console.error("Failed to generate questions:", error);
+      reportGenerateFailure(error);
       setInputMessage("Please try again another time.");
     } finally {
       setAiLoading(false);
@@ -111,7 +131,7 @@ export default function BuilderControlRow() {
       <div className="grid gap-[15px] align-baseline">
         <p className="mx-2">
           {checkForSurveyChanges(currentSurvey?.survey?.id || null, currentChanges) ||
-          currentSurvey?.survey?.id != null
+            currentSurvey?.survey?.id != null
             ? "What else do you want to ask about?"
             : "What is your survey about?"}
         </p>

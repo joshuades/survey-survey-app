@@ -1,5 +1,5 @@
 import { Question } from "@/db";
-import * as Sentry from "@sentry/nextjs";
+import { openaiCallFailed, reportServerProblem } from "@/lib/sentry-report";
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
 
@@ -22,10 +22,17 @@ const promptSystem = `Generate three unique survey questions based on the given 
   - Ensure the questions are diverse and contribute meaningful insights related to the topic.
   - Tailor the complexity and focus of questions to suit the expected survey audience.`;
 
+const openaiReport = {
+  area: "generate-questions" as const,
+  operation: "openai.chat.completions",
+  tags: { failure: "openai" },
+  fingerprint: ["openai-call-failed"],
+};
+
 export async function POST(req: Request) {
   try {
     if (!process.env.OPENAI_API_KEY) {
-      throw new Error("OPENAI_API_KEY is not configured");
+      throw openaiCallFailed(new Error("OPENAI_API_KEY is not configured"));
     }
 
     const { prompt, questions } = await req.json();
@@ -64,9 +71,18 @@ export async function POST(req: Request) {
       .filter((q) => q.trim() !== "")
       .map((q) => q.replace(regexForListSymbols, ""));
 
+    if (!questionTexts?.length) {
+      throw openaiCallFailed(new Error("empty completion"));
+    }
+
     return NextResponse.json({ questionTexts });
   } catch (error) {
-    Sentry.captureException(error, { tags: { route: "generate-questions" } });
+    if (error instanceof SyntaxError) {
+      return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+    }
+    const reported =
+      error instanceof Error && error.message === "OpenAI call failed" ? error : openaiCallFailed(error);
+    await reportServerProblem(reported, openaiReport);
     console.error("Error:", error);
     return NextResponse.json({ error: "Failed to generate questions" }, { status: 500 });
   }

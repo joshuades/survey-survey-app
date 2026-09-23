@@ -1,6 +1,7 @@
 "use client";
 
 import { type PatchUpdate, type Question, type Survey } from "@/db";
+import { reportClientProblem } from "@/lib/sentry-report";
 import { checkForSurveyChanges, randomString } from "@/lib/utils";
 import { type CollectedUpdate, type QuestionPointer, useStore } from "@/store/surveysStore";
 import { useSession } from "next-auth/react";
@@ -13,6 +14,18 @@ const SurveySubmitButton: FunctionComponent = () => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const { data: session } = useSession();
+
+  const reportSaveFailure = (operation: string, status?: number, cause?: unknown) => {
+    reportClientProblem(cause instanceof Error ? cause : new Error(`Survey persistence failed during ${operation}`), {
+      area: "survey-persistence",
+      operation,
+      tags: {
+        failure: "database",
+        ...(status != null ? { http_status: String(status) } : {}),
+      },
+      fingerprint: ["survey-persistence", operation],
+    });
+  };
 
   const {
     currentSurvey,
@@ -90,17 +103,26 @@ const SurveySubmitButton: FunctionComponent = () => {
       return;
     }
 
-    const response = await fetch("/api/surveys", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ name, questions }),
-    });
+    let response: Response;
+    try {
+      response = await fetch("/api/surveys", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name, questions }),
+      });
+    } catch (error) {
+      console.error("Failed to create survey:", error);
+      reportSaveFailure("createSurvey", undefined, error);
+      setErrorMessage("ERROR: Failed to create survey");
+      return;
+    }
     const data = await response.json();
 
     if (!response.ok) {
       console.error("Failed to create survey, check api response: ", data);
+      reportSaveFailure("createSurvey", response.status);
       setErrorMessage(`ERROR: ${data.error}`);
       return;
     }
@@ -115,17 +137,26 @@ const SurveySubmitButton: FunctionComponent = () => {
       collectedQuestions.map((cq) => cq.questionId).includes(q.id)
     );
 
-    const response = await fetch(`/api/surveys/${currentSurvey?.survey?.id}/questions/`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ questions }),
-    });
+    let response: Response;
+    try {
+      response = await fetch(`/api/surveys/${currentSurvey?.survey?.id}/questions/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ questions }),
+      });
+    } catch (error) {
+      console.error("Failed adding questions:", error);
+      reportSaveFailure("createQuestions", undefined, error);
+      setErrorMessage("ERROR: Failed adding questions");
+      return [];
+    }
     const data = await response.json();
 
     if (!response.ok) {
       console.error("Failed adding questions, check api response: ", data);
+      reportSaveFailure("createQuestions", response.status);
       setErrorMessage(`ERROR: ${data.error}`);
       return [];
     }
@@ -136,17 +167,26 @@ const SurveySubmitButton: FunctionComponent = () => {
   const tryDeleteQuestionsFromDb = async (collectedDeletes: Question[]) => {
     if (collectedDeletes?.length == 0) return [];
 
-    const response = await fetch(`/api/surveys/${currentSurvey?.survey?.id}/questions/`, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ collectedDeletes }),
-    });
+    let response: Response;
+    try {
+      response = await fetch(`/api/surveys/${currentSurvey?.survey?.id}/questions/`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ collectedDeletes }),
+      });
+    } catch (error) {
+      console.error("Failed to delete questions:", error);
+      reportSaveFailure("deleteQuestions", undefined, error);
+      setErrorMessage("ERROR: Failed to delete questions");
+      return [];
+    }
     const data = await response.json();
 
     if (!response.ok) {
-      console.error("Failed to delete survey, check api response: ", data);
+      console.error("Failed to delete questions, check api response: ", data);
+      reportSaveFailure("deleteQuestions", response.status);
       setErrorMessage(`ERROR: ${data.error}`);
       return [];
     }
@@ -172,17 +212,26 @@ const SurveySubmitButton: FunctionComponent = () => {
       patchUpdates.push({ id: cu.questionId, [cu.field]: cu.newValue });
     });
 
-    const response = await fetch(`/api/surveys/${currentSurvey?.survey?.id}/questions/`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ patchUpdates }),
-    });
+    let response: Response;
+    try {
+      response = await fetch(`/api/surveys/${currentSurvey?.survey?.id}/questions/`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ patchUpdates }),
+      });
+    } catch (error) {
+      console.error("Failed to update questions:", error);
+      reportSaveFailure("updateQuestions", undefined, error);
+      setErrorMessage("ERROR: Failed to update questions");
+      return false;
+    }
     const data = await response.json();
 
     if (!response.ok) {
       console.error("Failed to update questions, check api response: ", data);
+      reportSaveFailure("updateQuestions", response.status);
       setErrorMessage(`ERROR: ${data.error}`);
       return false;
     }

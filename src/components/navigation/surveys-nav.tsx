@@ -1,5 +1,6 @@
 "use client";
 
+import { reportClientProblem } from "@/lib/sentry-report";
 import { checkForSurveyChanges } from "@/lib/utils";
 import { useLoadingStore } from "@/store/loadingStore";
 import { useStore } from "@/store/surveysStore";
@@ -54,17 +55,34 @@ const SurveysNav: React.FC = () => {
   const handleSurveyDelete = async (id: number) => {
     if (!confirm("Are you sure you want to delete the selected survey?")) return;
 
-    const response = await fetch(`/api/surveys/${id}`, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    let response: Response;
+    try {
+      response = await fetch(`/api/surveys/${id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+    } catch (error) {
+      console.error("Failed to delete survey:", error);
+      reportClientProblem(error, {
+        area: "survey-persistence",
+        operation: "deleteSurvey",
+        tags: { failure: "database" },
+        fingerprint: ["survey-persistence", "deleteSurvey"],
+      });
+      return;
+    }
     const data = await response.json();
 
     if (!response.ok) {
       console.error("Failed to delete survey, check api response: ", data);
-      // TODO: show error message
+      reportClientProblem(new Error("Survey persistence failed during deleteSurvey"), {
+        area: "survey-persistence",
+        operation: "deleteSurvey",
+        tags: { failure: "database", http_status: String(response.status) },
+        fingerprint: ["survey-persistence", "deleteSurvey"],
+      });
       return;
     }
 

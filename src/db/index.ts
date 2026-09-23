@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth";
+import { reportServerProblem } from "@/lib/sentry-report";
 import { CollectedAnswer, CollectedAnswerer } from "@/store/surveysStore";
 import { sql as vercelSql } from "@vercel/postgres";
 import { and, desc, eq, inArray, sql } from "drizzle-orm";
@@ -432,6 +433,13 @@ export async function updateQuestions(patchUpdates: PatchUpdate[], surveyId: num
    * @returns {Promise<any>} The result of the update query.
    */
   function executeTask(patchUpdate: PatchUpdate) {
+    // // TEST ERROR CASE: reject on index 2
+    // if (patchUpdate.index == 2) {
+    //   return new Promise<number>((resolve, reject) => {
+    //     console.log("LOG: rejecting");
+    //     reject(patchUpdate.id);
+    //   });
+    // }
     if (patchUpdate.hasOwnProperty("index")) {
       return index_up_query.execute(patchUpdate);
     }
@@ -456,6 +464,12 @@ export async function updateQuestions(patchUpdates: PatchUpdate[], surveyId: num
     await run(patchUpdates);
   } catch (e) {
     console.error("Caught error: ", e);
+    await reportServerProblem(e, {
+      area: "survey-persistence",
+      operation: "updateQuestions",
+      tags: { failure: "database" },
+      fingerprint: ["survey-persistence", "updateQuestions"],
+    });
     errors.push(e);
   }
 
