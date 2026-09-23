@@ -85,19 +85,25 @@ export default function BuilderControlRow() {
       return;
     }
     setAiLoading(true);
+    setInputMessage("");
     try {
       const response = await fetch("/api/generate-questions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: currentInput, questions: currentSurvey?.questions }),
+        body: JSON.stringify({ prompt: currentInput, questions: currentSurvey?.questions ?? [] }),
       });
       const data = await response.json();
-      // add questions to currentSurvey
+      if (!response.ok) {
+        setInputMessage("Please try again another time.");
+        return;
+      }
       if (data.questionTexts) addQuestions(data.questionTexts);
     } catch (error) {
       console.error("Failed to generate questions:", error);
+      setInputMessage("Please try again another time.");
+    } finally {
+      setAiLoading(false);
     }
-    setAiLoading(false);
   };
 
   return (

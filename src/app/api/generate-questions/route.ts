@@ -1,10 +1,7 @@
 import { Question } from "@/db";
+import * as Sentry from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
 
 const promptSystem = `Generate three unique survey questions based on the given user input. Each question should be presented in a separate row without any symbols or bullet points. If the user provides specific questions, ensure the new questions are different but related to the same topic, enhancing the survey's depth and interest.
   # Steps
@@ -26,12 +23,26 @@ const promptSystem = `Generate three unique survey questions based on the given 
   - Tailor the complexity and focus of questions to suit the expected survey audience.`;
 
 export async function POST(req: Request) {
-  const { prompt, questions } = await req.json();
-
-  const existingQuestionTexts = questions?.map((q: Question) => q.questionText);
-  const promptUser = `Survey topic: "${prompt}". \n\nExisting questions: \n${existingQuestionTexts.join(" \n")}`;
-
   try {
+    if (!process.env.OPENAI_API_KEY) {
+      throw new Error("OPENAI_API_KEY is not configured");
+    }
+
+    const { prompt, questions } = await req.json();
+
+    if (typeof prompt !== "string" || !prompt.trim()) {
+      return NextResponse.json({ error: "A prompt is required" }, { status: 400 });
+    }
+
+    const existingQuestionTexts = Array.isArray(questions)
+      ? questions.map((q: Question) => q.questionText).filter(Boolean)
+      : [];
+    const promptUser = `Survey topic: "${prompt}". \n\nExisting questions: \n${existingQuestionTexts.join(" \n")}`;
+
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
@@ -55,6 +66,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ questionTexts });
   } catch (error) {
+    Sentry.captureException(error, { tags: { route: "generate-questions" } });
     console.error("Error:", error);
     return NextResponse.json({ error: "Failed to generate questions" }, { status: 500 });
   }
