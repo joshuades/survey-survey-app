@@ -75,6 +75,7 @@ export const CustomMuxVideo = React.forwardRef<HTMLVideoElement, CustomMuxVideoP
           onLoadedData={() => setIsVideoLoaded(true)}
           ref={ref}
           poster={thumbnailUrl}
+          preferPlayback="mse"
         />
       </div>
     );
